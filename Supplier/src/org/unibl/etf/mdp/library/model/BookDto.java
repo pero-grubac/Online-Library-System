@@ -1,13 +1,11 @@
 package org.unibl.etf.mdp.library.model;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Random;
 
-public class Book implements Serializable {
-
+public class BookDto implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Random rand = new Random();
 	private String title;
@@ -15,22 +13,29 @@ public class Book implements Serializable {
 	private String editor;
 	private String language;
 	private Date releaseDate;
-	private String content;
-	private byte[] coverImage;
 	private int price;
 
-	public Book() {
+	public BookDto() {
 		super();
 	}
 
-	public Book(String title, String author, String editor, String language, Date realeaseDate) {
+	public BookDto(String title, String author, String editor, String language, Date releaseDate, int price) {
 		super();
 		this.title = title;
 		this.author = author;
 		this.editor = editor;
 		this.language = language;
-		this.releaseDate = realeaseDate;
-		this.price = rand.nextInt(100) + 1;;
+		this.releaseDate = releaseDate;
+		this.price = price;
+	}
+
+	public BookDto(Book book) {
+		this.title = book.getTitle();
+		this.author = book.getAuthor();
+		this.editor = book.getEditor();
+		this.language = book.getLanguage();
+		this.releaseDate = book.getReleaseDate();
+		this.price = book.getPrice();
 	}
 
 	public String getTitle() {
@@ -73,22 +78,6 @@ public class Book implements Serializable {
 		this.releaseDate = releaseDate;
 	}
 
-	public byte[] getCoverImage() {
-		return coverImage;
-	}
-
-	public void setCoverImage(byte[] coverImage) {
-		this.coverImage = coverImage;
-	}
-
-	public String getContent() {
-		return content;
-	}
-
-	public void setContent(String content) {
-		this.content = content;
-	}
-
 	public int getPrice() {
 		return price;
 	}
@@ -99,7 +88,7 @@ public class Book implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(author, editor, language, releaseDate, title);
+		return Objects.hash(author, editor, language, price, releaseDate, title);
 	}
 
 	@Override
@@ -110,17 +99,15 @@ public class Book implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Book other = (Book) obj;
+		BookDto other = (BookDto) obj;
 		return Objects.equals(author, other.author) && Objects.equals(editor, other.editor)
-				&& Objects.equals(language, other.language) && Objects.equals(releaseDate, other.releaseDate)
-				&& Objects.equals(title, other.title);
+				&& Objects.equals(language, other.language) && price == other.price
+				&& Objects.equals(releaseDate, other.releaseDate) && Objects.equals(title, other.title);
 	}
 
 	@Override
 	public String toString() {
-		SimpleDateFormat displayFormat = new SimpleDateFormat("dd.MM.yyyy.");
-		String releaseDateStr = (releaseDate != null) ? displayFormat.format(releaseDate) : "N/A";
-
-		return author + " - " + title + " [" + editor + " - " + language + "] (" + releaseDateStr + ")";
+		return "BookDto [title=" + title + ", author=" + author + ", editor=" + editor + ", language=" + language
+				+ ", releaseDate=" + releaseDate + ", price=" + price + "]";
 	}
 }

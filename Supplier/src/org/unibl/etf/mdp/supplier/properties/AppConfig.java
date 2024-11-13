@@ -55,7 +55,19 @@ public class AppConfig {
 		return getProperty("SECURITY_DIR");
 	}
 
-	public String getAccountingServerRMI() {
-		return getProperty("ACCOUNTING_SERVER_RMI");
+	public String getSecurityFile() {
+		return getProperty("SECURITY_FILE");
+	}
+
+	public String getRegistryName() {
+		return getProperty("REGISTRY_NAME");
+	}
+
+	public int getRegistryPort() {
+		return getIntegerProperty("REGISTRY_PORT");
+	}
+
+	public String getSecurityPolicy() {
+		return getProperty("SECURITY_POLICY");
 	}
 }

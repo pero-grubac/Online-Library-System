@@ -7,15 +7,18 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.unibl.etf.mdp.library.model.Book;
+import org.unibl.etf.mdp.supplierserver.logger.FileLogger;
 import org.unibl.etf.mdp.supplierserver.properties.AppConfig;
 
 import redis.clients.jedis.Jedis;
@@ -26,6 +29,8 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 public class BookService {
 	private final JedisPool pool;
 	private static final AppConfig conf = new AppConfig();
+	private static final Random rand = new Random();
+	private static final Logger logger = FileLogger.getLogger(BookService.class.getName());
 
 	public BookService() {
 		String redisHost = conf.getRedisHost();
@@ -58,18 +63,23 @@ public class BookService {
 			if (releaseDateStr != null) {
 				try {
 					book.setReleaseDate(new SimpleDateFormat("MMMM d, yyyy", Locale.ENGLISH).parse(releaseDateStr));
-				} catch (ParseException e) {
-					e.printStackTrace();
+				} catch (ParseException ex) {
+					logger.log(Level.SEVERE, "An error occurred in the server application", ex);
+				}catch (Exception ex) {
+					logger.log(Level.SEVERE, "An error occurred in the server application", ex);
 				}
 			}
+			book.setPrice(rand.nextInt(100) + 1);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
 			if (contentReader != null) {
 				try {
 					contentReader.close();
-				} catch (IOException e) {
-					e.printStackTrace();
+				} catch (IOException ex) {
+					logger.log(Level.SEVERE, "An error occurred in the server application", ex);
+				}catch (Exception ex) {
+					logger.log(Level.SEVERE, "An error occurred in the server application", ex);
 				}
 			}
 		}
@@ -95,9 +105,10 @@ public class BookService {
 
 			Files.write(filePath, book.getContent().getBytes());
 			System.out.println("Book content saved successfully at: " + filePath);
-		} catch (IOException e) {
-			System.out.println("An error occurred while saving the book content.");
-			e.printStackTrace();
+		} catch (IOException ex) {
+			logger.log(Level.SEVERE, "An error occurred in the server application", ex);
+		}catch (Exception ex) {
+			logger.log(Level.SEVERE, "An error occurred in the server application", ex);
 		}
 	}
 
@@ -108,9 +119,10 @@ public class BookService {
 		try (Jedis jedis = pool.getResource()) {
 			jedis.hmset(bookId, bookMap);
 			System.out.println("Book saved in Redis for user " + username + " with ID: " + bookId);
-		} catch (JedisConnectionException e) {
-			System.out.println("Failed to connect to Redis. Please check the Redis server.");
-			e.printStackTrace();
+		} catch (JedisConnectionException ex) {
+			logger.log(Level.SEVERE, "An error occurred in the server application", ex);
+		}catch (Exception ex) {
+			logger.log(Level.SEVERE, "An error occurred in the server application", ex);
 		}
 	}
 
@@ -128,10 +140,11 @@ public class BookService {
 				return null;
 			}
 			return Book.fromMap(bookMap);
-		} catch (JedisConnectionException e) {
-			System.out.println("Failed to connect to Redis. Please check the Redis server.");
-			e.printStackTrace();
+		} catch (JedisConnectionException ex) {
+			logger.log(Level.SEVERE, "An error occurred in the server application", ex);
 			return null;
+		}catch (Exception ex) {
+			logger.log(Level.SEVERE, "An error occurred in the server application", ex);return null;
 		}
 	}
 }
