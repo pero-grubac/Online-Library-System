@@ -16,6 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.unibl.etf.mdp.biblioteka.model.Book;
+import org.unibl.etf.mdp.dobavljacserver.properties.AppConfig;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -23,9 +24,16 @@ import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class BookService {
-	private static final JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", 6379);
+	private final JedisPool pool;
+	private static final AppConfig conf = new AppConfig();
 
-	public static Book getBookFromUrl(String url) {
+	public BookService() {
+		String redisHost = conf.getRedisHost();
+		int redisPort = conf.getRedisPort();
+		pool = new JedisPool(new JedisPoolConfig(), redisHost, redisPort);
+	}
+
+	public Book getBookFromUrl(String url) {
 		URL bookURL;
 		BufferedReader contentReader = null;
 		StringBuilder content = new StringBuilder();
@@ -68,7 +76,7 @@ public class BookService {
 		return book;
 	}
 
-	private static String parsePattern(String pattern, String text) {
+	private String parsePattern(String pattern, String text) {
 		Pattern p = Pattern.compile(pattern, Pattern.MULTILINE);
 		Matcher m = p.matcher(text);
 		if (m.find()) {
@@ -77,7 +85,7 @@ public class BookService {
 		return null;
 	}
 
-	public static void saveBookToFile(Book book, String username) {
+	public void saveBookToFile(Book book, String username) {
 		Path directoryPath = Paths.get("suppliers", "users", username);
 		try {
 			Files.createDirectories(directoryPath);
@@ -93,7 +101,7 @@ public class BookService {
 		}
 	}
 
-	public static void saveBookToRedis(Book book, String username) {
+	public void saveBookToRedis(Book book, String username) {
 		String bookId = "user:" + username + ":book:" + book.hashCode();
 		Map<String, String> bookMap = book.toHashMap();
 
@@ -106,7 +114,7 @@ public class BookService {
 		}
 	}
 
-	public static Book getBookFromRedis(String username, int bookHash) {
+	public Book getBookFromRedis(String username, int bookHash) {
 		String bookId = "user:" + username + ":book:" + bookHash;
 
 		try (Jedis jedis = pool.getResource()) {

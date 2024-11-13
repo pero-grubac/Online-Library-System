@@ -33,8 +33,9 @@ public class ServerThread extends Thread {
 		try {
 			String request;
 			while (!"KRAJ".equals(request = in.readLine())) {
+				BookService service = new BookService();
 				if (request.startsWith("https://www.gutenberg.org/cache/epub/")) {
-					Book book = BookService.getBookFromUrl(request);
+					Book book = service.getBookFromUrl(request);
 					out.writeObject(book);
 					out.flush();
 				}

@@ -1,0 +1,11 @@
+nov 13, 2024 2:06:24 POPODNE org.unibl.etf.mdp.dobavljacserver.app.App main
+SEVERE: An error occurred in the server application
+java.net.BindException: Address already in use: NET_Bind
+	at java.base/java.net.PlainSocketImpl.bind0(Native Method)
+	at java.base/java.net.PlainSocketImpl.socketBind(PlainSocketImpl.java:132)
+	at java.base/java.net.AbstractPlainSocketImpl.bind(AbstractPlainSocketImpl.java:452)
+	at java.base/java.net.ServerSocket.bind(ServerSocket.java:395)
+	at java.base/java.net.ServerSocket.<init>(ServerSocket.java:257)
+	at java.base/java.net.ServerSocket.<init>(ServerSocket.java:149)
+	at org.unibl.etf.mdp.dobavljacserver.app.App.main(App.java:23)
+
