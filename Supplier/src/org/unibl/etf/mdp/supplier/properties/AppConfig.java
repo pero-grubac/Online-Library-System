@@ -50,4 +50,12 @@ public class AppConfig {
 	public String getLogFile() {
 		return getProperty("LOG_FILE");
 	}
+
+	public String getSecurityDir() {
+		return getProperty("SECURITY_DIR");
+	}
+
+	public String getAccountingServerRMI() {
+		return getProperty("ACCOUNTING_SERVER_RMI");
+	}
 }
