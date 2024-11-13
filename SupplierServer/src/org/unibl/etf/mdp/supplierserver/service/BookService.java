@@ -102,7 +102,7 @@ public class BookService {
 	}
 
 	public void saveBookToRedis(Book book, String username) {
-		String bookId = "user:" + username + ":book:" + book.hashCode();
+		String bookId = "supplier:" + username + ":book:" + book.hashCode();
 		Map<String, String> bookMap = book.toHashMap();
 
 		try (Jedis jedis = pool.getResource()) {
