@@ -1,4 +1,4 @@
-package org.unibl.etf.mdp.accountingserver.service;
+package org.unibl.etf.mdp.library.service;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;

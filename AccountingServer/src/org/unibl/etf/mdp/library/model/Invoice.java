@@ -9,7 +9,7 @@ import java.util.Objects;
 public class Invoice implements Serializable {
 
 	private LocalDate date;
-	private List<Book> books;
+	private List<BookDto> books;
 	private int totalPrice;
 	private double VAT;
 
@@ -19,7 +19,7 @@ public class Invoice implements Serializable {
 		this.totalPrice = 0;
 	}
 
-	public void addBook(Book book) {
+	public void addBook(BookDto book) {
 		books.add(book);
 		totalPrice += book.getPrice();
 	}
@@ -32,11 +32,11 @@ public class Invoice implements Serializable {
 		this.date = date;
 	}
 
-	public List<Book> getBooks() {
+	public List<BookDto> getBooks() {
 		return books;
 	}
 
-	public void setBooks(List<Book> books) {
+	public void setBooks(List<BookDto> books) {
 		this.books = books;
 	}
 

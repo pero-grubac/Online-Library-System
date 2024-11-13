@@ -1,13 +1,18 @@
-package org.unibl.etf.mdp.accountingserver.service;
+package org.unibl.etf.mdp.library.service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.rmi.RemoteException;
 import java.time.format.DateTimeFormatter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import org.unibl.etf.mdp.accountingserver.logger.FileLogger;
 import org.unibl.etf.mdp.library.model.Invoice;
 
 import com.google.gson.Gson;
@@ -15,6 +20,7 @@ import com.google.gson.Gson;
 public class AccountingService implements IAccountingService {
 	Gson gson = new Gson();
 	private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+	private static final Logger logger = FileLogger.getLogger(AccountingService.class.getName());
 
 	public AccountingService() throws RemoteException {
 		super();
@@ -22,7 +28,10 @@ public class AccountingService implements IAccountingService {
 
 	@Override
 	public double addInvoice(Invoice invoice, String username) throws RemoteException {
-		invoice.setVAT(invoice.getTotalPrice() * 0.17);
+		double vat = invoice.getTotalPrice() * 0.17;
+		BigDecimal vatRounded = BigDecimal.valueOf(vat).setScale(2, RoundingMode.HALF_UP);
+		invoice.setVAT(vatRounded.doubleValue());
+		saveInvoice(invoice, username);
 		return invoice.getVAT();
 	}
 
@@ -41,8 +50,10 @@ public class AccountingService implements IAccountingService {
 			Files.write(filePath, jsonContent.getBytes(), StandardOpenOption.CREATE);
 
 			System.out.println("Invoice saved as JSON at: " + filePath);
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (IOException ex) {
+			logger.log(Level.SEVERE, "An error occurred in the server application", ex);
+		} catch (Exception ex) {
+			logger.log(Level.SEVERE, "An error occurred in the server application", ex);
 		}
 	}
 }

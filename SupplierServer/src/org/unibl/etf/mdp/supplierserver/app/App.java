@@ -5,12 +5,14 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.unibl.etf.mdp.supplierserver.properties.AppConfig;
 import org.unibl.etf.mdp.supplierserver.logger.FileLogger;
 import org.unibl.etf.mdp.supplierserver.server.ServerThread;
 
 public class App {
-	public static final int TCP_PORT = 9000;
-    private static final Logger logger = FileLogger.getLogger(App.class.getName());
+	public static final AppConfig conf = new AppConfig();
+	public static final int TCP_PORT = conf.getTCPPort();
+	private static final Logger logger = FileLogger.getLogger(App.class.getName());
 
 	public static void main(String[] args) {
 		try {
