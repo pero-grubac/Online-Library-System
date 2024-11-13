@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.unibl.etf.mdp.dobavljacserver.model.Book;
+import org.unibl.etf.mdp.biblioteka.model.Book;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;

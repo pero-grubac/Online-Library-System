@@ -1,5 +1,6 @@
-package org.unibl.etf.mdp.dobavljacserver.model;
+package org.unibl.etf.mdp.biblioteka.model;
 
+import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -7,8 +8,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class Book {
+public class Book implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+	
 	private String title;
 	private String author;
 	private String editor;
@@ -19,7 +22,6 @@ public class Book {
 
 	public Book() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public Book(String title, String author, String editor, String language, Date realeaseDate) {
