@@ -9,7 +9,10 @@ public class App {
 		Book book = BookService.getBookFromUrl("https://www.gutenberg.org/cache/epub/27761/pg27761.txt");
 		System.out.println(book);
 		String username = "test";
-		BookService.saveBookToFile(book, username);
+		BookService.saveBookToRedis(book, username);
+		Book newBook = BookService.getBookFromRedis(username, book.hashCode());
+		System.out.println(newBook);
+
 	}
 
 }

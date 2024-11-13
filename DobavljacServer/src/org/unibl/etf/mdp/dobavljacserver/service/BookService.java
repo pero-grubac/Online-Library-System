@@ -11,12 +11,16 @@ import java.nio.file.StandardOpenOption;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.unibl.etf.mdp.dobavljacserver.model.Book;
 
+import redis.clients.jedis.Jedis;
+
 public class BookService {
+	private static final Jedis jedis = new Jedis("localhost", 6379);
 
 	public static Book getBookFromUrl(String url) {
 		URL bookURL;
@@ -84,5 +88,19 @@ public class BookService {
 			System.out.println("An error occurred while saving the book content.");
 			e.printStackTrace();
 		}
+	}
+
+	public static void saveBookToRedis(Book book, String username) {
+		String bookId = "user:" + username + ":book:" + book.hashCode();
+		Map<String, String> bookMap = book.toHashMap();
+		jedis.hmset(bookId, bookMap);
+		System.out.println("Book saved in Redis for user " + username + " with ID: " + bookId);
+	}
+
+	public static Book getBookFromRedis(String username, int bookHash) {
+		String bookId = "user:" + username + ":book:" + bookHash;
+		Map<String, String> bookMap = jedis.hgetAll(bookId);
+		Book book = Book.fromMap(bookMap);
+		return book;
 	}
 }
