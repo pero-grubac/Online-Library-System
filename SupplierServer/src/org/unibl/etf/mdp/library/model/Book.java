@@ -7,11 +7,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 
 public class Book implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+	private static final Random rand = new Random();
 	private String title;
 	private String author;
 	private String editor;
@@ -19,6 +20,7 @@ public class Book implements Serializable {
 	private Date releaseDate;
 	private String content;
 	private byte[] coverImage;
+	private int price;
 
 	public Book() {
 		super();
@@ -31,6 +33,7 @@ public class Book implements Serializable {
 		this.editor = editor;
 		this.language = language;
 		this.releaseDate = realeaseDate;
+		this.price = rand.nextInt(100) + 1;
 	}
 
 	public String getTitle() {
@@ -89,6 +92,14 @@ public class Book implements Serializable {
 		this.content = content;
 	}
 
+	public int getPrice() {
+		return price;
+	}
+
+	public void setPrice(int price) {
+		this.price = price;
+	}
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(author, editor, language, releaseDate, title);
@@ -110,27 +121,29 @@ public class Book implements Serializable {
 
 		return map;
 	}
+
 	public static Book fromMap(Map<String, String> map) {
-        Book book = new Book();
+		Book book = new Book();
 
-        book.setTitle(map.get("title"));
-        book.setAuthor(map.get("author"));
-        book.setEditor(map.get("editor"));
-        book.setLanguage(map.get("language"));
-        
-        String releaseDateStr = map.get("releaseDate");
-        if (releaseDateStr != null) {
-            try {
-                SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
-                book.setReleaseDate(dateFormat.parse(releaseDateStr));
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-        }
+		book.setTitle(map.get("title"));
+		book.setAuthor(map.get("author"));
+		book.setEditor(map.get("editor"));
+		book.setLanguage(map.get("language"));
 
-        book.setContent(map.get("content"));
-        return book;
-    }
+		String releaseDateStr = map.get("releaseDate");
+		if (releaseDateStr != null) {
+			try {
+				SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
+				book.setReleaseDate(dateFormat.parse(releaseDateStr));
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+		}
+
+		book.setContent(map.get("content"));
+		return book;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

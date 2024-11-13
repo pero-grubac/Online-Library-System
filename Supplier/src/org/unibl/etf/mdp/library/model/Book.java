@@ -4,11 +4,12 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
-
+import java.util.Random;
 
 public class Book implements Serializable {
 
 	private static final long serialVersionUID = 1L;
+	private static final Random rand = new Random();
 	private String title;
 	private String author;
 	private String editor;
@@ -16,6 +17,7 @@ public class Book implements Serializable {
 	private Date releaseDate;
 	private String content;
 	private byte[] coverImage;
+	private int price;
 
 	public Book() {
 		super();
@@ -28,6 +30,7 @@ public class Book implements Serializable {
 		this.editor = editor;
 		this.language = language;
 		this.releaseDate = realeaseDate;
+		this.price = rand.nextInt(100) + 1;;
 	}
 
 	public String getTitle() {
@@ -84,6 +87,14 @@ public class Book implements Serializable {
 
 	public void setContent(String content) {
 		this.content = content;
+	}
+
+	public int getPrice() {
+		return price;
+	}
+
+	public void setPrice(int price) {
+		this.price = price;
 	}
 
 	@Override
