@@ -1,4 +1,4 @@
-package org.unibl.etf.mdp.supplier.properties;
+package org.unibl.etf.mdp.accountingserver.properties;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,7 +14,7 @@ public class AppConfig {
 
 	private void loadProperties() {
 		try (InputStream input = getClass().getClassLoader()
-				.getResourceAsStream("org/unibl/etf/mdp/supplier/properties/app.properties")) {
+				.getResourceAsStream("org/unibl/etf/mdp/accountingserver/properties/app.properties")) {
 			if (input == null) {
 				System.out.println("Sorry, unable to find app.properties");
 				return;
@@ -37,18 +37,6 @@ public class AppConfig {
 
 	private Integer getIntegerProperty(String key) {
 		return Integer.parseInt(properties.getProperty(key));
-	}
-
-	public int getDobavljacServerTCPPort() {
-		return getIntegerProperty("DOBAVLJAC_SERVER_TCP_PORT");
-	}
-
-	public String getLogDir() {
-		return getProperty("LOG_DIR");
-	}
-
-	public String getLogFile() {
-		return getProperty("LOG_FILE");
 	}
 
 	public String getSecurityDir() {
