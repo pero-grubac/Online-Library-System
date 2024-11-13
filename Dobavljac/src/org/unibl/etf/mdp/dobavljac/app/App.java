@@ -38,7 +38,6 @@ public class App {
 				System.out.println("\nSent URL to server: " + url);
 				Book book = (Book) in.readObject();
 				System.out.println("Received Book from server: " + rand.nextInt() + " " + book);
-				Thread.sleep(5000);
 			}
 			out.println("KRAJ");
 
