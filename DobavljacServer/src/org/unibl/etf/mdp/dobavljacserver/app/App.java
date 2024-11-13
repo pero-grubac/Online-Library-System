@@ -1,18 +1,26 @@
 package org.unibl.etf.mdp.dobavljacserver.app;
 
-import org.unibl.etf.mdp.dobavljacserver.model.Book;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+import org.unibl.etf.mdp.biblioteka.model.Book;
+import org.unibl.etf.mdp.dobavljacserver.server.ServerThread;
 import org.unibl.etf.mdp.dobavljacserver.service.BookService;
 
 public class App {
+	public static final int TCP_PORT = 9000;
 
 	public static void main(String[] args) {
-		Book book = BookService.getBookFromUrl("https://www.gutenberg.org/cache/epub/27761/pg27761.txt");
-		System.out.println(book);
-		String username = "test";
-		BookService.saveBookToRedis(book, username);
-		Book newBook = BookService.getBookFromRedis(username, book.hashCode());
-		System.out.println(newBook);
-
+		try {
+			System.out.println("DOBAVLJAC SERVER");
+			ServerSocket ss = new ServerSocket(TCP_PORT);
+			while (true) {
+				Socket sock = ss.accept();
+				new ServerThread(sock);
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 
 }
