@@ -1,11 +1,12 @@
 package org.unibl.etf.mdp.library.model;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class Invoice {
+public class Invoice implements Serializable {
 
 	private LocalDate date;
 	private List<Book> books;
