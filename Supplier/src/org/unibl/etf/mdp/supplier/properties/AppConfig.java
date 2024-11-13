@@ -42,4 +42,12 @@ public class AppConfig {
 	public int getDobavljacServerTCPPort() {
 		return getIntegerProperty("DOBAVLJAC_SERVER_TCP_PORT");
 	}
+
+	public String getLogDir() {
+		return getProperty("LOG_DIR");
+	}
+
+	public String getLogFile() {
+		return getProperty("LOG_FILE");
+	}
 }
