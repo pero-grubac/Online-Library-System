@@ -1,2 +1,0 @@
-# Biblioteka
-Projekat iz MDP
