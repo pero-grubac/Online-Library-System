@@ -18,9 +18,12 @@ import java.util.regex.Pattern;
 import org.unibl.etf.mdp.dobavljacserver.model.Book;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class BookService {
-	private static final Jedis jedis = new Jedis("localhost", 6379);
+	private static final JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", 6379);
 
 	public static Book getBookFromUrl(String url) {
 		URL bookURL;
@@ -93,14 +96,34 @@ public class BookService {
 	public static void saveBookToRedis(Book book, String username) {
 		String bookId = "user:" + username + ":book:" + book.hashCode();
 		Map<String, String> bookMap = book.toHashMap();
-		jedis.hmset(bookId, bookMap);
-		System.out.println("Book saved in Redis for user " + username + " with ID: " + bookId);
+
+		try (Jedis jedis = pool.getResource()) {
+			jedis.hmset(bookId, bookMap);
+			System.out.println("Book saved in Redis for user " + username + " with ID: " + bookId);
+		} catch (JedisConnectionException e) {
+			System.out.println("Failed to connect to Redis. Please check the Redis server.");
+			e.printStackTrace();
+		}
 	}
 
 	public static Book getBookFromRedis(String username, int bookHash) {
 		String bookId = "user:" + username + ":book:" + bookHash;
-		Map<String, String> bookMap = jedis.hgetAll(bookId);
-		Book book = Book.fromMap(bookMap);
-		return book;
+
+		try (Jedis jedis = pool.getResource()) {
+			if (!jedis.exists(bookId)) {
+				System.out.println("Book not found in Redis for user " + username + " with ID: " + bookId);
+				return null;
+			}
+			Map<String, String> bookMap = jedis.hgetAll(bookId);
+			if (bookMap.isEmpty()) {
+				System.out.println("Book not found in Redis for user " + username + " with ID: " + bookId);
+				return null;
+			}
+			return Book.fromMap(bookMap);
+		} catch (JedisConnectionException e) {
+			System.out.println("Failed to connect to Redis. Please check the Redis server.");
+			e.printStackTrace();
+			return null;
+		}
 	}
 }
