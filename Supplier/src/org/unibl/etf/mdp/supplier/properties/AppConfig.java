@@ -78,4 +78,16 @@ public class AppConfig {
 	public String getLinksFile() {
 		return getProperty("LINKS_FILE");
 	}
+
+	public String getDtoMsg() {
+		return getProperty("GET_DTO");
+	}
+
+	public String getModelMsg() {
+		return getProperty("GET_MODEL");
+	}
+
+	public String getEndMsg() {
+		return getProperty("END_MSG");
+	}
 }

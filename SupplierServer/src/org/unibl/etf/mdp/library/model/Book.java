@@ -15,7 +15,6 @@ public class Book implements Serializable {
 	private static final Random rand = new Random();
 	private String title;
 	private String author;
-	private String editor;
 	private String language;
 	private Date releaseDate;
 	private String content;
@@ -26,11 +25,10 @@ public class Book implements Serializable {
 		super();
 	}
 
-	public Book(String title, String author, String editor, String language, Date realeaseDate) {
+	public Book(String title, String author, String language, Date realeaseDate) {
 		super();
 		this.title = title;
 		this.author = author;
-		this.editor = editor;
 		this.language = language;
 		this.releaseDate = realeaseDate;
 		this.price = rand.nextInt(100) + 1;
@@ -50,14 +48,6 @@ public class Book implements Serializable {
 
 	public void setAuthor(String author) {
 		this.author = author;
-	}
-
-	public String getEditor() {
-		return editor;
-	}
-
-	public void setEditor(String editor) {
-		this.editor = editor;
 	}
 
 	public String getLanguage() {
@@ -102,14 +92,13 @@ public class Book implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(author, editor, language, releaseDate, title);
+		return Objects.hash(author, language, releaseDate, title);
 	}
 
 	public Map<String, String> toHashMap() {
 		Map<String, String> map = new HashMap<>();
 		map.put("title", title);
 		map.put("author", author);
-		map.put("editor", editor);
 		map.put("language", language);
 
 		if (releaseDate != null) {
@@ -127,7 +116,6 @@ public class Book implements Serializable {
 
 		book.setTitle(map.get("title"));
 		book.setAuthor(map.get("author"));
-		book.setEditor(map.get("editor"));
 		book.setLanguage(map.get("language"));
 
 		String releaseDateStr = map.get("releaseDate");
@@ -153,16 +141,15 @@ public class Book implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		Book other = (Book) obj;
-		return Objects.equals(author, other.author) && Objects.equals(editor, other.editor)
-				&& Objects.equals(language, other.language) && Objects.equals(releaseDate, other.releaseDate)
-				&& Objects.equals(title, other.title);
+		return Objects.equals(author, other.author) && Objects.equals(language, other.language)
+				&& Objects.equals(releaseDate, other.releaseDate) && Objects.equals(title, other.title);
 	}
 
 	@Override
 	public String toString() {
 		SimpleDateFormat displayFormat = new SimpleDateFormat("dd.MM.yyyy.");
 		String releaseDateStr = (releaseDate != null) ? displayFormat.format(releaseDate) : "N/A";
-		String result = author + " - " + title + " [" + editor + " - " + language + "] (" + releaseDateStr + ")";
+		String result = author + " - " + title + " ["  + language + "] (" + releaseDateStr + ")";
 
 		return result.replaceAll("[:\\\\/*?|<>]", "-");
 	}

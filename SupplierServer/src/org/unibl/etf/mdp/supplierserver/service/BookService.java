@@ -57,14 +57,7 @@ public class BookService {
 			book.setContent(content.toString());
 
 			book.setTitle(parsePattern("Title:\\s*(.*)", content.toString()));
-			book.setAuthor(parsePattern("Author:\\s*(.*)", content.toString()));
-			
-			String editor = parsePattern("Editor:\\s*(.*)", content.toString());
-			if (editor == null) {
-			    editor = parsePattern("Credits:\\s*(.*)", content.toString());
-			}
-			book.setEditor(editor);
-			
+			book.setAuthor(parsePattern("Author:\\s*(.*)", content.toString()));		
 			book.setLanguage(parsePattern("Language:\\s*(.*)", content.toString()));
 
 			String releaseDateStr = parsePattern("Release date:\\s*([A-Za-z]+\\s+\\d{1,2},\\s+\\d{4})",

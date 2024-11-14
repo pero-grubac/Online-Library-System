@@ -5,12 +5,11 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.Random;
 
-public class BookDto implements Serializable{
+public class BookDto implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Random rand = new Random();
 	private String title;
 	private String author;
-	private String editor;
 	private String language;
 	private Date releaseDate;
 	private int price;
@@ -19,17 +18,14 @@ public class BookDto implements Serializable{
 		super();
 	}
 
-	public BookDto(String title, String author, String editor, String language, Date releaseDate, int price) {
+	public BookDto(String title, String author, String language, Date releaseDate, int price) {
 		super();
 		this.title = title;
 		this.author = author;
-		this.editor = editor;
 		this.language = language;
 		this.releaseDate = releaseDate;
 		this.price = price;
 	}
-
-	
 
 	public String getTitle() {
 		return title;
@@ -45,14 +41,6 @@ public class BookDto implements Serializable{
 
 	public void setAuthor(String author) {
 		this.author = author;
-	}
-
-	public String getEditor() {
-		return editor;
-	}
-
-	public void setEditor(String editor) {
-		this.editor = editor;
 	}
 
 	public String getLanguage() {
@@ -81,7 +69,7 @@ public class BookDto implements Serializable{
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(author, editor, language, price, releaseDate, title);
+		return Objects.hash(author, language, price, releaseDate, title);
 	}
 
 	@Override
@@ -93,14 +81,13 @@ public class BookDto implements Serializable{
 		if (getClass() != obj.getClass())
 			return false;
 		BookDto other = (BookDto) obj;
-		return Objects.equals(author, other.author) && Objects.equals(editor, other.editor)
-				&& Objects.equals(language, other.language) && price == other.price
+		return Objects.equals(author, other.author) && Objects.equals(language, other.language) && price == other.price
 				&& Objects.equals(releaseDate, other.releaseDate) && Objects.equals(title, other.title);
 	}
 
 	@Override
 	public String toString() {
-		return "BookDto [title=" + title + ", author=" + author + ", editor=" + editor + ", language=" + language
-				+ ", releaseDate=" + releaseDate + ", price=" + price + "]";
+		return "BookDto [title=" + title + ", author=" + author + ", language=" + language + ", releaseDate="
+				+ releaseDate + ", price=" + price + "]";
 	}
 }
