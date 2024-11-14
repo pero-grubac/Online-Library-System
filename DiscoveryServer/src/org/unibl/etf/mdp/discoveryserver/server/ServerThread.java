@@ -19,7 +19,8 @@ public class ServerThread extends Thread {
 	private static final String discoverMsg = conf.getDiscoveryMsg();
 	private static final String endMsg = conf.getEndMsg();
 	private static final String okMsg = conf.getOkMsg();
-	
+	private static final String discoverAllMsg = conf.getDiscoverAllMsg();
+
 	private Socket sock;
 	private ObjectInputStream in;
 	private ObjectOutputStream out;
@@ -46,15 +47,20 @@ public class ServerThread extends Thread {
 					if (discoverMsg.equals(request.getType())) {
 						int port;
 						try {
-							port = Integer.parseInt(request.getBody());
+							port = (Integer) request.getBody();
 						} catch (Exception e) {
 							logger.log(Level.SEVERE, "Error parsing port.", e);
 							break;
 						}
-						servers.put(request.getUsername(), request.getBody());
+						servers.put((String) request.getUsername(), (String) request.getBody());
 						System.out.println("Registered server: " + request.getUsername() + " on port: " + port);
-						
+
 						Message response = new Message(okMsg);
+						out.writeObject(response);
+						out.flush();
+					} else if (discoverAllMsg.equals(request.getType())) {
+						Message response = new Message(discoverAllMsg, "DiscoveryServer");
+						response.setBody(servers.toString());
 						out.writeObject(response);
 						out.flush();
 					} else if (endMsg.equals(request.getType())) {

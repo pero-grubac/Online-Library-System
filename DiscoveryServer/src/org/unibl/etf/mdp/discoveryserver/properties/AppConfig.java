@@ -62,4 +62,9 @@ public class AppConfig {
 	public String getEndMsg() {
 		return getProperty("END_MSG");
 	}
+
+	public String getDiscoverAllMsg() {
+		return getProperty("DISCOVER_ALL");
+	}
+
 }

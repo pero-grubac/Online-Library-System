@@ -17,13 +17,13 @@ import org.unibl.etf.mdp.supplier.logger.FileLogger;
 import org.unibl.etf.mdp.supplier.properties.AppConfig;
 
 public class SupplierServerService {
-	public AppConfig conf;
-	public int DOBAVLJAC_SERVER_TCP_PORT;
+	private AppConfig conf;
+	private int SUPPLIER_SERVER_TCP_PORT;
 	private Logger logger;
 
 	public SupplierServerService() {
 		conf = new AppConfig();
-		DOBAVLJAC_SERVER_TCP_PORT = conf.getSupplierServerTCPPort();
+		SUPPLIER_SERVER_TCP_PORT = conf.getSupplierServerTCPPort();
 		logger = FileLogger.getLogger(SupplierServerService.class.getName());
 	}
 
@@ -36,7 +36,7 @@ public class SupplierServerService {
 		try {
 
 			InetAddress addr = InetAddress.getByName("localhost");
-			Socket sock = new Socket(addr, DOBAVLJAC_SERVER_TCP_PORT);
+			Socket sock = new Socket(addr, SUPPLIER_SERVER_TCP_PORT);
 
 			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
 			ObjectInputStream in = new ObjectInputStream(sock.getInputStream());
