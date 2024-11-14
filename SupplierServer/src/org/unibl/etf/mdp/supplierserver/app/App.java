@@ -16,7 +16,7 @@ public class App {
 
 	public static void main(String[] args) {
 		try {
-			System.out.println("DOBAVLJAC SERVER");
+			System.out.println("Supplier server");
 			ServerSocket ss = new ServerSocket(TCP_PORT);
 			while (true) {
 				Socket sock = ss.accept();

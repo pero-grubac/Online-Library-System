@@ -2,6 +2,7 @@ package org.unibl.etf.mdp.supplierserver.server;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -19,7 +20,7 @@ public class ServerThread extends Thread {
 	private Socket sock;
 	private BufferedReader in;
 	private ObjectOutputStream out;
-
+	private BookService service = new BookService();
 	public ServerThread(Socket sock) {
 		this.sock = sock;
 		try {
@@ -35,18 +36,28 @@ public class ServerThread extends Thread {
 		try {
 			String request;
 			while (!"KRAJ".equals(request = in.readLine())) {
-				BookService service = new BookService();
-				if (request.startsWith("https://www.gutenberg.org/cache/epub/")) {
-					Book book = service.getBookFromUrl(request);
+				String[] parts = request.split("\\|");
+				if (parts.length == 2) {
+					String supplierName = parts[0];
+					String url = parts[1];
+
+					Book book = service.getBookFromUrl(url);
+					service.saveBookToFile(book, supplierName);
 					out.writeObject(book);
-					out.flush();
+					System.out.println("Sent book to supplier " + supplierName + " for URL: " + url);
 				}
 			}
-			in.close();
-			out.close();
-			sock.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
+		} finally {
+			try {
+				in.close();
+				out.close();
+				sock.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
+
 }
