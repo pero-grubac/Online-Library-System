@@ -21,7 +21,7 @@ public class ServerThread extends Thread {
 	private ObjectInputStream in;
 	private ObjectOutputStream out;
 
-	public ServerThread(Socket sock) {
+	public ServerThread(Socket sock,String serverName) {
 		this.sock = sock;
 		try {
 			in = new ObjectInputStream(sock.getInputStream());
