@@ -1,5 +1,6 @@
 package org.unibl.etf.mdp.supplier.server;
 
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -31,24 +32,43 @@ public class Server {
 
 			while (true) {
 				Socket sock = ss.accept();
-				new ServerThread(sock,serverName);
+				new ServerThread(sock, serverName);
 			}
 		} catch (Exception ex) {
 			logger.log(Level.SEVERE, "An error occurred in the server application", ex);
 		}
 	}
 
-	private void sendDiscoveryMessage() {
+	private boolean sendDiscoveryMessage() {
 		String discoveryMsg = conf.getDiscoveryMsg();
+		String okMsg = conf.getOkMsg();
+		String endMsg = conf.getEndMsg();
+
 		Message msg = new Message(discoveryMsg, serverName, String.valueOf(serverPort));
+
 		try (Socket discoverySocket = new Socket(InetAddress.getByName("localhost"), DISCOVERY_SERVER_TCP);
-				ObjectOutputStream out = new ObjectOutputStream(discoverySocket.getOutputStream())) {
+				ObjectOutputStream out = new ObjectOutputStream(discoverySocket.getOutputStream());
+				ObjectInputStream in = new ObjectInputStream(discoverySocket.getInputStream())) {
 
+			// Send discovery message
 			out.writeObject(msg);
-			System.out.println("Sent discovery message to Discovery server: " + msg);
+			out.flush();
 
+			// Wait for the acknowledgment message
+			Message response = (Message) in.readObject();
+			if (okMsg.equals(response.getType())) {
+				System.out.println("Received acknowledgment from Discovery Server: " + response);
+				msg = new Message(endMsg, serverName);
+				out.writeObject(msg);
+				out.flush();
+				return true;
+			} else {
+				System.out.println("Unexpected response from Discovery Server: " + response);
+				return false;
+			}
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Failed to send discovery message", e);
+			return false;
 		}
 	}
 

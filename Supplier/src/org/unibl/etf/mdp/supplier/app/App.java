@@ -18,6 +18,7 @@ import org.unibl.etf.mdp.library.model.BookDto;
 import org.unibl.etf.mdp.supplier.logger.FileLogger;
 import org.unibl.etf.mdp.supplier.mock.MockSupppliers;
 import org.unibl.etf.mdp.supplier.properties.AppConfig;
+import org.unibl.etf.mdp.supplier.server.Server;
 import org.unibl.etf.mdp.supplier.services.SupplierServerService;
 import org.unibl.etf.mdp.supplier.templates.Tuple;
 
@@ -52,5 +53,7 @@ public class App {
 		}
 
 		scanner.close();
+		
+		Server server = new Server(supplierName);
 	}
 }
