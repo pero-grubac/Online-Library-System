@@ -98,4 +98,8 @@ public class AppConfig {
 	public String getDiscoveryMsg() {
 		return getProperty("DISCOVERY");
 	}
+
+	public String getOkMsg() {
+		return getProperty("OK");
+	}
 }
