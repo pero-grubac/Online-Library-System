@@ -71,4 +71,15 @@ public class AppConfig {
 		return getProperty("BOOK_EXT");
 	}
 
+	public String getDtoMsg() {
+		return getProperty("GET_DTO");
+	}
+
+	public String getModelMsg() {
+		return getProperty("GET_MODEL");
+	}
+
+	public String getEndMsg() {
+		return getProperty("END_MSG");
+	}
 }

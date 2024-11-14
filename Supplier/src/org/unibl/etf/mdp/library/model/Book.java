@@ -12,7 +12,6 @@ public class Book implements Serializable {
 	private static final Random rand = new Random();
 	private String title;
 	private String author;
-	private String editor;
 	private String language;
 	private Date releaseDate;
 	private String content;
@@ -23,11 +22,10 @@ public class Book implements Serializable {
 		super();
 	}
 
-	public Book(String title, String author, String editor, String language, Date realeaseDate) {
+	public Book(String title, String author,  String language, Date realeaseDate) {
 		super();
 		this.title = title;
 		this.author = author;
-		this.editor = editor;
 		this.language = language;
 		this.releaseDate = realeaseDate;
 		this.price = rand.nextInt(100) + 1;;
@@ -49,13 +47,7 @@ public class Book implements Serializable {
 		this.author = author;
 	}
 
-	public String getEditor() {
-		return editor;
-	}
 
-	public void setEditor(String editor) {
-		this.editor = editor;
-	}
 
 	public String getLanguage() {
 		return language;
@@ -99,7 +91,7 @@ public class Book implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(author, editor, language, releaseDate, title);
+		return Objects.hash(author, language, releaseDate, title);
 	}
 
 	@Override
@@ -111,7 +103,7 @@ public class Book implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		Book other = (Book) obj;
-		return Objects.equals(author, other.author) && Objects.equals(editor, other.editor)
+		return Objects.equals(author, other.author) 
 				&& Objects.equals(language, other.language) && Objects.equals(releaseDate, other.releaseDate)
 				&& Objects.equals(title, other.title);
 	}
@@ -121,6 +113,6 @@ public class Book implements Serializable {
 		SimpleDateFormat displayFormat = new SimpleDateFormat("dd.MM.yyyy.");
 		String releaseDateStr = (releaseDate != null) ? displayFormat.format(releaseDate) : "N/A";
 
-		return author + " - " + title + " [" + editor + " - " + language + "] (" + releaseDateStr + ")";
+		return author + " - " + title + " ["  + language + "] (" + releaseDateStr + ")";
 	}
 }
