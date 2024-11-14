@@ -39,10 +39,12 @@ public class AppConfig {
 		return Integer.parseInt(properties.getProperty(key));
 	}
 
-	public int getDobavljacServerTCPPort() {
-		return getIntegerProperty("DOBAVLJAC_SERVER_TCP_PORT");
+	public int getSupplierServerTCPPort() {
+		return getIntegerProperty("SUPPLIER_SERVER_TCP_PORT");
 	}
-
+	public int getSupplierTCPPort() {
+		return getIntegerProperty("SUPPLIER_TCP_PORT");
+	}
 	public String getLogDir() {
 		return getProperty("LOG_DIR");
 	}

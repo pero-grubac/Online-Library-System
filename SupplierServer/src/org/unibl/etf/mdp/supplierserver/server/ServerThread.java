@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.unibl.etf.mdp.library.model.Book;
+import org.unibl.etf.mdp.library.model.BookDto;
 import org.unibl.etf.mdp.library.model.Message;
 import org.unibl.etf.mdp.supplierserver.logger.FileLogger;
 import org.unibl.etf.mdp.supplierserver.properties.AppConfig;
@@ -59,7 +60,8 @@ public class ServerThread extends Thread {
 	                service.saveBookToFile(book, supplierName);
 
 	                // Slanje odgovora klijentu
-	                out.writeObject(book);
+	                BookDto bookdto = new BookDto(book);
+	                out.writeObject(bookdto);
 	                out.flush();
 	                System.out.println("Sent book to supplier " + supplierName);
 
