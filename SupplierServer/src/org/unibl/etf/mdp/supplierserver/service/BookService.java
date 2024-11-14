@@ -7,6 +7,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -65,7 +66,7 @@ public class BookService {
 					book.setReleaseDate(new SimpleDateFormat("MMMM d, yyyy", Locale.ENGLISH).parse(releaseDateStr));
 				} catch (ParseException ex) {
 					logger.log(Level.SEVERE, "An error occurred in the server application", ex);
-				}catch (Exception ex) {
+				} catch (Exception ex) {
 					logger.log(Level.SEVERE, "An error occurred in the server application", ex);
 				}
 			}
@@ -78,7 +79,7 @@ public class BookService {
 					contentReader.close();
 				} catch (IOException ex) {
 					logger.log(Level.SEVERE, "An error occurred in the server application", ex);
-				}catch (Exception ex) {
+				} catch (Exception ex) {
 					logger.log(Level.SEVERE, "An error occurred in the server application", ex);
 				}
 			}
@@ -96,18 +97,20 @@ public class BookService {
 	}
 
 	public void saveBookToFile(Book book, String username) {
-		Path directoryPath = Paths.get("suppliers", "users", username);
+		String dir = conf.getSuppliersDir();
+		String ext = conf.getBookExt();
+		Path filePath = Paths.get(dir, username, book.toString() + ext); 
+
 		try {
-			Files.createDirectories(directoryPath);
+			Files.createDirectories(filePath.getParent());
 
-			String fileName = book.toString() + ".txt";
-			Path filePath = directoryPath.resolve(fileName);
+			Files.write(filePath, book.getContent().getBytes(), StandardOpenOption.CREATE,
+					StandardOpenOption.TRUNCATE_EXISTING);
 
-			Files.write(filePath, book.getContent().getBytes());
 			System.out.println("Book content saved successfully at: " + filePath);
 		} catch (IOException ex) {
-			logger.log(Level.SEVERE, "An error occurred in the server application", ex);
-		}catch (Exception ex) {
+			logger.log(Level.SEVERE, "An error occurred while saving the book content", ex);
+		} catch (Exception ex) {
 			logger.log(Level.SEVERE, "An error occurred in the server application", ex);
 		}
 	}
@@ -121,7 +124,7 @@ public class BookService {
 			System.out.println("Book saved in Redis for user " + username + " with ID: " + bookId);
 		} catch (JedisConnectionException ex) {
 			logger.log(Level.SEVERE, "An error occurred in the server application", ex);
-		}catch (Exception ex) {
+		} catch (Exception ex) {
 			logger.log(Level.SEVERE, "An error occurred in the server application", ex);
 		}
 	}
@@ -143,8 +146,9 @@ public class BookService {
 		} catch (JedisConnectionException ex) {
 			logger.log(Level.SEVERE, "An error occurred in the server application", ex);
 			return null;
-		}catch (Exception ex) {
-			logger.log(Level.SEVERE, "An error occurred in the server application", ex);return null;
+		} catch (Exception ex) {
+			logger.log(Level.SEVERE, "An error occurred in the server application", ex);
+			return null;
 		}
 	}
 }

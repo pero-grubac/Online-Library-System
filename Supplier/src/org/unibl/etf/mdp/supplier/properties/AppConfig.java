@@ -70,4 +70,12 @@ public class AppConfig {
 	public String getSecurityPolicy() {
 		return getProperty("SECURITY_POLICY");
 	}
+
+	public String getSuppliersDir() {
+		return getProperty("SUPPLIERS_DIR");
+	}
+
+	public String getLinksFile() {
+		return getProperty("LINKS_FILE");
+	}
 }
