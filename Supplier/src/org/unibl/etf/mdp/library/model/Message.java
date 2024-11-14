@@ -8,7 +8,7 @@ public class Message implements Serializable {
 
 	private String type;
 	private String username;
-	private String body;
+	private Object body;
 
 	public Message(String type) {
 		super();
@@ -21,11 +21,11 @@ public class Message implements Serializable {
 		this.username = username;
 	}
 
-	public Message(String type, String username, String bookId) {
+	public Message(String type, String username, Object body) {
 		super();
 		this.type = type;
 		this.username = username;
-		this.body = bookId;
+		this.body = body;
 	}
 
 	public String getType() {
@@ -44,11 +44,11 @@ public class Message implements Serializable {
 		this.username = username;
 	}
 
-	public String getBody() {
+	public Object getBody() {
 		return body;
 	}
 
-	public void setBody(String body) {
+	public void setBody(Object body) {
 		this.body = body;
 	}
 

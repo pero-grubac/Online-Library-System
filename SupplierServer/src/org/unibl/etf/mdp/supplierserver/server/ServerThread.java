@@ -47,31 +47,31 @@ public class ServerThread extends Thread {
 	public void run() {
 		try {
 			Message request;
-			while(true) {
-	            request = (Message) in.readObject();
+			while (true) {
+				request = (Message) in.readObject();
 
-	            // Provera tipa poruke
-	            if (getDTOMsg.equals(request.getType())) {
-	                String url = request.getBody(); // Preuzimanje URL-a knjige iz tela poruke
-	                String supplierName = request.getUsername(); // Preuzimanje korisničkog imena dobavljača
+				// Provera tipa poruke
+				if (getDTOMsg.equals(request.getType())) {
+					String url = (String) request.getBody(); // Preuzimanje URL-a knjige iz tela poruke
+					String supplierName = request.getUsername(); // Preuzimanje korisničkog imena dobavljača
 
-	                // Preuzimanje knjige na osnovu URL-a i čuvanje
-	                Book book = service.getBookFromUrl(url);
-	                service.saveBookToFile(book, supplierName);
+					// Preuzimanje knjige na osnovu URL-a i čuvanje
+					Book book = service.getBookFromUrl(url);
+					service.saveBookToFile(book, supplierName);
 
-	                // Slanje odgovora klijentu
-	                BookDto bookdto = new BookDto(book);
-	                out.writeObject(bookdto);
-	                out.flush();
-	                System.out.println("Sent book to supplier " + supplierName);
+					// Slanje odgovora klijentu
+					BookDto bookdto = new BookDto(book);
+					out.writeObject(bookdto);
+					out.flush();
+					System.out.println("Sent book to supplier " + supplierName);
 
-	            } else if (endMsg.equals(request.getType())) {
-	                System.out.println("Ending connection for supplier " );
-	                break; // Izlazak iz petlje i završetak konekcije
+				} else if (endMsg.equals(request.getType())) {
+					System.out.println("Ending connection for supplier ");
+					break; // Izlazak iz petlje i završetak konekcije
 
-	            } else {
-	                System.out.println("Unknown message type: " + request.getType());
-	            }
+				} else {
+					System.out.println("Unknown message type: " + request.getType());
+				}
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();

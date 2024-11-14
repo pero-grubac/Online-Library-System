@@ -102,4 +102,16 @@ public class AppConfig {
 	public String getOkMsg() {
 		return getProperty("OK");
 	}
+
+	public String getRequestMsg() {
+		return getProperty("REQUEST");
+	}
+
+	public String getApproveMsg() {
+		return getProperty("APPROVE");
+	}
+
+	public String getDenialMsg() {
+		return getProperty("DENIAL");
+	}
 }
