@@ -13,6 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.unibl.etf.mdp.library.model.Book;
+import org.unibl.etf.mdp.library.model.BookDto;
 import org.unibl.etf.mdp.library.model.BookSupplier;
 import org.unibl.etf.mdp.supplier.properties.AppConfig;
 import org.unibl.etf.mdp.supplier.templates.Tuple;
@@ -101,8 +102,8 @@ public class MockSupppliers {
 		}
 	}
 
-	public Map<String, Tuple<List<String>, List<Book>>> getSupplierData() {
-		Map<String, Tuple<List<String>, List<Book>>> supplierData = new HashMap<>();
+	public Map<String, List<String>> getSupplierData() {
+		Map<String, List<String>> supplierData = new HashMap<>();
 		String dir = conf.getSuppliersDir();
 		String linkFile = conf.getLinksFile();
 
@@ -113,9 +114,7 @@ public class MockSupppliers {
 			try {
 				List<String> bookLinks = Files.readAllLines(linkFilePath);
 
-				List<Book> books = new ArrayList<>();
-				
-				supplierData.put(supplierName, new Tuple<>(bookLinks, books));
+				supplierData.put(supplierName, bookLinks);
 			} catch (Exception e) {
 				logger.log(Level.SEVERE, "An error occurred while reading links for supplier: " + supplierName, e);
 			}
