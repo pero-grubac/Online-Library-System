@@ -74,4 +74,8 @@ public class AppConfig {
 	public String getDenialMsg() {
 		return getProperty("DENIAL");
 	}
+
+	public String getOkMsg() {
+		return getProperty("OK");
+	}
 }

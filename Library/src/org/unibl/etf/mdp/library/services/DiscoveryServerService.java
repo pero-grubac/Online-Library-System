@@ -34,7 +34,7 @@ public class DiscoveryServerService {
 			out.flush();
 
 			Message response = (Message) in.readObject();
-			String serverList = response.getBody();
+			String serverList =(String) response.getBody();
 			String[] entries = serverList.replace("{", "").replace("}", "").split(", ");
 			for (String entry : entries) {
 				String[] keyValue = entry.split("=");

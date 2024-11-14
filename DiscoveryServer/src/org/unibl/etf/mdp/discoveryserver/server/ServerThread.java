@@ -47,7 +47,8 @@ public class ServerThread extends Thread {
 					if (discoverMsg.equals(request.getType())) {
 						int port;
 						try {
-							port = (Integer) request.getBody();
+							String temp = (String) request.getBody();
+							port = Integer.parseInt(temp);
 						} catch (Exception e) {
 							logger.log(Level.SEVERE, "Error parsing port.", e);
 							break;

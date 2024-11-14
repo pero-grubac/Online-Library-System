@@ -32,7 +32,7 @@ public class App {
 		MockSupppliers mock = new MockSupppliers();
 		Map<String, List<String>> supplierData = mock.getSupplierData();
 		Map<String, List<BookDto>> supplierBooks = new HashMap<>();
-		
+
 		SupplierServerService serverService = new SupplierServerService();
 
 		System.out.println("Available suppliers:");
@@ -53,7 +53,7 @@ public class App {
 		}
 
 		scanner.close();
-		
-		Server server = new Server(supplierName);
+
+		Server server = new Server(supplierName, supplierBooks.get(supplierName));
 	}
 }

@@ -16,38 +16,43 @@ import org.unibl.etf.mdp.library.properties.AppConfig;
 
 public class SupplierService {
 	private static final AppConfig conf = new AppConfig();
-	private static final int SUPPLIER_SERVER_TCP_PORT = conf.getDiscoveryServerTCPPort();
 	private static final Logger logger = FileLogger.getLogger(DiscoveryServerService.class.getName());
+	private static final String dtoMsg = conf.getDtoMsg();
+	private static final String endMsg = conf.getEndMsg();
+	private static final String okMsg = conf.getOkMsg();
 
-	
-	public List<BookDto> getOfferedBooks(String username){
+	public static List<BookDto> getOfferedBooks(String username, int port) {
 		List<BookDto> books = new ArrayList<>();
-		String dtoMsg = conf.getDtoMsg();
-		String endMsg = conf.getEndMsg();
-		Message request = new Message(dtoMsg,username);
-		try {
-			InetAddress addr = InetAddress.getByName("localhost");
-			Socket sock = new Socket(addr, SUPPLIER_SERVER_TCP_PORT);
 
-			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
-			ObjectInputStream in = new ObjectInputStream(sock.getInputStream());
+		Message request = new Message(dtoMsg, username);
+		try (Socket sock = new Socket(InetAddress.getByName("localhost"), port);
+				ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
+				ObjectInputStream in = new ObjectInputStream(sock.getInputStream())) {
 
 			out.writeObject(request);
 			out.flush();
-			
-			
-			
-			request = new Message(endMsg);
-			out.writeObject(request);
-			out.flush();
 
-			in.close();
-			out.close();
-			sock.close();
-		}catch (Exception ex) {
+			while (true) {
+				Message response = (Message) in.readObject();
+
+				if (dtoMsg.equals(response.getType())) {
+					books.add((BookDto) response.getBody());
+
+					Message acknowledgment = new Message(okMsg, username);
+					out.writeObject(acknowledgment);
+					out.flush();
+				} else if (endMsg.equals(response.getType())) {
+					System.out.println("Received end message, closing connection.");
+					break;
+				} else {
+					logger.warning("Unknown message type received: " + response.getType());
+				}
+			}
+
+		} catch (Exception ex) {
 			logger.log(Level.SEVERE, "An error occurred in the client application", ex);
 		}
-		
+
 		return books;
 	}
 }

@@ -1,12 +1,16 @@
 package org.unibl.etf.mdp.supplier.server;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.unibl.etf.mdp.library.model.BookDto;
+import org.unibl.etf.mdp.library.model.Message;
 import org.unibl.etf.mdp.supplier.logger.FileLogger;
 import org.unibl.etf.mdp.supplier.properties.AppConfig;
 import org.unibl.etf.mdp.supplier.server.ServerThread;
@@ -16,13 +20,19 @@ public class ServerThread extends Thread {
 	private static final Logger logger = FileLogger.getLogger(ServerThread.class.getName());
 	private static final String getDTOMsg = conf.getDtoMsg();
 	private static final String endMsg = conf.getEndMsg();
+	private static final String getAllMsg = conf.getDtoMsg();
+	private static final String okMsg = conf.getOkMsg();
 
 	private Socket sock;
 	private ObjectInputStream in;
 	private ObjectOutputStream out;
+	private String serverName;
+	private List<BookDto> books;
 
-	public ServerThread(Socket sock,String serverName) {
+	public ServerThread(Socket sock, String serverName, List<BookDto> books) {
 		this.sock = sock;
+		this.serverName = serverName;
+		this.books = books;
 		try {
 			in = new ObjectInputStream(sock.getInputStream());
 			out = new ObjectOutputStream(sock.getOutputStream());
@@ -33,7 +43,43 @@ public class ServerThread extends Thread {
 	}
 
 	public void run() {
+		try {
+			Message request;
+			while (true) {
+				try {
+					request = (Message) in.readObject();
+					if (getAllMsg.equals(request.getType())) {
+						for (BookDto book : books) {
+							Message response = new Message(getAllMsg, serverName, book);
+							out.writeObject(response);
+							out.flush();
 
+							Message acknowledgment = (Message) in.readObject(); // Čekanje na `okMsg` od klijenta
+							if (!okMsg.equals(acknowledgment.getType())) {
+								logger.warning("Did not receive OK acknowledgment for book: " + book);
+								break;
+							}
+						}
+						Message endMessage = new Message(endMsg, serverName);
+						out.writeObject(endMessage); // Slanje `endMsg` kao znak kraja
+						out.flush();
+						break;
+					} else if (endMsg.equals(request.getType())) {
+						System.out.println("Ending connection for supplier " + serverName);
+						break;
+					} else {
+						logger.log(Level.WARNING, "Unknown message type received: " + request.getType());
+					}
+				} catch (EOFException ex) {
+					logger.log(Level.SEVERE, "Client ended the connection.", ex);
+					break;
+				}
+			}
+		} catch (Exception ex) {
+			logger.log(Level.SEVERE, "Exception occurred during run.", ex);
+		} finally {
+			cleanup();
+		}
 	}
 
 	private void cleanup() {
