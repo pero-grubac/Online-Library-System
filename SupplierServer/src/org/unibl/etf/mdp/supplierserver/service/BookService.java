@@ -28,15 +28,17 @@ import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class BookService {
-	private final JedisPool pool;
+	// private final JedisPool pool;
 	private static final AppConfig conf = new AppConfig();
 	private static final Random rand = new Random();
 	private static final Logger logger = FileLogger.getLogger(BookService.class.getName());
 
 	public BookService() {
-		String redisHost = conf.getRedisHost();
-		int redisPort = conf.getRedisPort();
-		pool = new JedisPool(new JedisPoolConfig(), redisHost, redisPort);
+		/*
+		 * String redisHost = conf.getRedisHost(); 
+		 * int redisPort = conf.getRedisPort();
+		 * pool = new JedisPool(new JedisPoolConfig(), redisHost, redisPort);
+		 */
 	}
 
 	public Book getBookFromUrl(String url) {
@@ -56,7 +58,13 @@ public class BookService {
 
 			book.setTitle(parsePattern("Title:\\s*(.*)", content.toString()));
 			book.setAuthor(parsePattern("Author:\\s*(.*)", content.toString()));
-			book.setEditor(parsePattern("Editor:\\s*(.*)", content.toString()));
+			
+			String editor = parsePattern("Editor:\\s*(.*)", content.toString());
+			if (editor == null) {
+			    editor = parsePattern("Credits:\\s*(.*)", content.toString());
+			}
+			book.setEditor(editor);
+			
 			book.setLanguage(parsePattern("Language:\\s*(.*)", content.toString()));
 
 			String releaseDateStr = parsePattern("Release date:\\s*([A-Za-z]+\\s+\\d{1,2},\\s+\\d{4})",
@@ -99,7 +107,7 @@ public class BookService {
 	public void saveBookToFile(Book book, String username) {
 		String dir = conf.getSuppliersDir();
 		String ext = conf.getBookExt();
-		Path filePath = Paths.get(dir, username, book.toString() + ext); 
+		Path filePath = Paths.get(dir, username, book.toString() + ext);
 
 		try {
 			Files.createDirectories(filePath.getParent());
@@ -115,40 +123,30 @@ public class BookService {
 		}
 	}
 
-	public void saveBookToRedis(Book book, String username) {
-		String bookId = "supplier:" + username + ":book:" + book.hashCode();
-		Map<String, String> bookMap = book.toHashMap();
-
-		try (Jedis jedis = pool.getResource()) {
-			jedis.hmset(bookId, bookMap);
-			System.out.println("Book saved in Redis for user " + username + " with ID: " + bookId);
-		} catch (JedisConnectionException ex) {
-			logger.log(Level.SEVERE, "An error occurred in the server application", ex);
-		} catch (Exception ex) {
-			logger.log(Level.SEVERE, "An error occurred in the server application", ex);
-		}
-	}
-
-	public Book getBookFromRedis(String username, int bookHash) {
-		String bookId = "user:" + username + ":book:" + bookHash;
-
-		try (Jedis jedis = pool.getResource()) {
-			if (!jedis.exists(bookId)) {
-				System.out.println("Book not found in Redis for user " + username + " with ID: " + bookId);
-				return null;
-			}
-			Map<String, String> bookMap = jedis.hgetAll(bookId);
-			if (bookMap.isEmpty()) {
-				System.out.println("Book not found in Redis for user " + username + " with ID: " + bookId);
-				return null;
-			}
-			return Book.fromMap(bookMap);
-		} catch (JedisConnectionException ex) {
-			logger.log(Level.SEVERE, "An error occurred in the server application", ex);
-			return null;
-		} catch (Exception ex) {
-			logger.log(Level.SEVERE, "An error occurred in the server application", ex);
-			return null;
-		}
-	}
+	/*
+	 * public void saveBookToRedis(Book book, String username) { String bookId =
+	 * "supplier:" + username + ":book:" + book.hashCode(); Map<String, String>
+	 * bookMap = book.toHashMap();
+	 * 
+	 * try (Jedis jedis = pool.getResource()) { jedis.hmset(bookId, bookMap);
+	 * System.out.println("Book saved in Redis for user " + username + " with ID: "
+	 * + bookId); } catch (JedisConnectionException ex) { logger.log(Level.SEVERE,
+	 * "An error occurred in the server application", ex); } catch (Exception ex) {
+	 * logger.log(Level.SEVERE, "An error occurred in the server application", ex);
+	 * } }
+	 * 
+	 * public Book getBookFromRedis(String username, int bookHash) { String bookId =
+	 * "user:" + username + ":book:" + bookHash;
+	 * 
+	 * try (Jedis jedis = pool.getResource()) { if (!jedis.exists(bookId)) {
+	 * System.out.println("Book not found in Redis for user " + username +
+	 * " with ID: " + bookId); return null; } Map<String, String> bookMap =
+	 * jedis.hgetAll(bookId); if (bookMap.isEmpty()) {
+	 * System.out.println("Book not found in Redis for user " + username +
+	 * " with ID: " + bookId); return null; } return Book.fromMap(bookMap); } catch
+	 * (JedisConnectionException ex) { logger.log(Level.SEVERE,
+	 * "An error occurred in the server application", ex); return null; } catch
+	 * (Exception ex) { logger.log(Level.SEVERE,
+	 * "An error occurred in the server application", ex); return null; } }
+	 */
 }

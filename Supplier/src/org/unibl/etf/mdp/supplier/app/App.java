@@ -39,6 +39,8 @@ public class App {
 	public static void main(String[] args) {
 		try {
 			System.out.println("Supplier client");
+			MockSupppliers mock = new MockSupppliers();
+			Map<String, Tuple<List<String>, List<Book>>> supplierData = mock.getSupplierData();
 			/*
 			 * List<String> urlList =
 			 * Arrays.asList("https://www.gutenberg.org/cache/epub/1342/pg1342.txt",
@@ -72,29 +74,66 @@ public class App {
 			 * System.out.println(service.addInvoice(invoice, "test"));
 			 */
 
-			MockSupppliers mock = new MockSupppliers();
-			Map<String, Tuple<List<String>, List<Book>>> supplierData = mock.getSupplierData();
-
-			InetAddress addr = InetAddress.getByName("localhost");
-			Socket sock = new Socket(addr, DOBAVLJAC_SERVER_TCP_PORT);
-
-			ObjectInputStream in = new ObjectInputStream(sock.getInputStream());
-			PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(sock.getOutputStream())), true);
+			/*
+			 * MockSupppliers mock = new MockSupppliers(); Map<String, Tuple<List<String>,
+			 * List<Book>>> supplierData = mock.getSupplierData();
+			 * 
+			 * InetAddress addr = InetAddress.getByName("localhost"); Socket sock = new
+			 * Socket(addr, DOBAVLJAC_SERVER_TCP_PORT);
+			 * 
+			 * ObjectInputStream in = new ObjectInputStream(sock.getInputStream());
+			 * PrintWriter out = new PrintWriter(new BufferedWriter(new
+			 * OutputStreamWriter(sock.getOutputStream())), true);
+			 * 
+			 * for (Map.Entry<String, Tuple<List<String>, List<Book>>> entry :
+			 * supplierData.entrySet()) { String supplierName = entry.getKey(); List<String>
+			 * bookLinks = entry.getValue().getFirst(); List<Book> books =
+			 * entry.getValue().getSecond();
+			 * 
+			 * for (String url : bookLinks) { out.println(supplierName + "|" + url);
+			 * 
+			 * Book book = (Book) in.readObject(); books.add(book);
+			 * System.out.println("Supplier " + supplierName + "recieved Book from server: "
+			 * + " " + book); } } out.println("KRAJ"); in.close(); out.close();
+			 * sock.close();
+			 */
 
 			for (Map.Entry<String, Tuple<List<String>, List<Book>>> entry : supplierData.entrySet()) {
 				String supplierName = entry.getKey();
 				List<String> bookLinks = entry.getValue().getFirst();
-				for (String url : bookLinks) {
-					out.println(url);
-					Book book = (Book) in.readObject();
-				}
-			}
-			out.println("KRAJ");
-			in.close();
-			out.close();
-			sock.close();
+				List<Book> books = entry.getValue().getSecond();
 
-		} catch (Exception ex) {
+				new Thread(() -> {
+					try {
+						InetAddress addr = InetAddress.getByName("localhost");
+						Socket sock = new Socket(addr, DOBAVLJAC_SERVER_TCP_PORT);
+
+						ObjectInputStream in = new ObjectInputStream(sock.getInputStream());
+						PrintWriter out = new PrintWriter(
+								new BufferedWriter(new OutputStreamWriter(sock.getOutputStream())), true);
+
+						for (String url : bookLinks) {
+							out.println(supplierName + "|" + url);
+
+							Book book = (Book) in.readObject();
+							synchronized (books) {
+								books.add(book);
+							}
+							System.out.println("Supplier " + supplierName + " received Book from server: " + book);
+						}
+						out.println("KRAJ");
+						in.close();
+						out.close();
+						sock.close();
+					} catch (Exception ex) {
+						logger.log(Level.SEVERE, "An error occurred for supplier " + supplierName, ex);
+					}
+				}).start();
+			}
+
+		} catch (
+
+		Exception ex) {
 			logger.log(Level.SEVERE, "An error occurred in the server application", ex);
 		}
 

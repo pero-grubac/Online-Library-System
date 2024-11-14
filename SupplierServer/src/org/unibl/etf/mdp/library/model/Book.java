@@ -162,8 +162,9 @@ public class Book implements Serializable {
 	public String toString() {
 		SimpleDateFormat displayFormat = new SimpleDateFormat("dd.MM.yyyy.");
 		String releaseDateStr = (releaseDate != null) ? displayFormat.format(releaseDate) : "N/A";
+		String result = author + " - " + title + " [" + editor + " - " + language + "] (" + releaseDateStr + ")";
 
-		return author + " - " + title + " [" + editor + " - " + language + "] (" + releaseDateStr + ")";
+		return result.replaceAll("[:\\\\/*?|<>]", "-");
 	}
 
 }
