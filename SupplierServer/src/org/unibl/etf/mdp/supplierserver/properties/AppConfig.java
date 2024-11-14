@@ -62,4 +62,13 @@ public class AppConfig {
 	public String getRedisHost() {
 		return getProperty("REDIS_HOST");
 	}
+
+	public String getSuppliersDir() {
+		return getProperty("SUPPLIERS_DIR");
+	}
+
+	public String getBookExt() {
+		return getProperty("BOOK_EXT");
+	}
+
 }
