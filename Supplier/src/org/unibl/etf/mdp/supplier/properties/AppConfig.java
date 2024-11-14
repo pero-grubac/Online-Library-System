@@ -42,9 +42,11 @@ public class AppConfig {
 	public int getSupplierServerTCPPort() {
 		return getIntegerProperty("SUPPLIER_SERVER_TCP_PORT");
 	}
-	public int getSupplierTCPPort() {
-		return getIntegerProperty("SUPPLIER_TCP_PORT");
+
+	public int getDiscoveryServerTCPPort() {
+		return getIntegerProperty("DISCOVERY_SERVER_TCP_PORT");
 	}
+
 	public String getLogDir() {
 		return getProperty("LOG_DIR");
 	}
@@ -91,5 +93,9 @@ public class AppConfig {
 
 	public String getEndMsg() {
 		return getProperty("END_MSG");
+	}
+
+	public String getDiscoveryMsg() {
+		return getProperty("DISCOVERY");
 	}
 }
