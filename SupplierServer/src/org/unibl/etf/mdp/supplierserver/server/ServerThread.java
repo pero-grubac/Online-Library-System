@@ -74,7 +74,8 @@ public class ServerThread extends Thread {
 				}
 			}
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			logger.log(Level.SEVERE, "Exception.", ex);
+
 		} finally {
 			cleanup();
 		}

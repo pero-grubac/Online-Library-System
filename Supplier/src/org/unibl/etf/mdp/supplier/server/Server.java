@@ -5,9 +5,11 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.unibl.etf.mdp.library.model.BookDto;
 import org.unibl.etf.mdp.library.model.Message;
 import org.unibl.etf.mdp.supplier.logger.FileLogger;
 import org.unibl.etf.mdp.supplier.properties.AppConfig;
@@ -19,9 +21,11 @@ public class Server {
 
 	private String serverName;
 	private int serverPort;
+	private List<BookDto> books;
 
-	public Server(String servername) {
+	public Server(String servername, List<BookDto> books) {
 		this.serverName = servername;
+		this.books = books;
 		try {
 			ServerSocket ss = new ServerSocket(0);
 			this.serverPort = ss.getLocalPort();
@@ -32,7 +36,7 @@ public class Server {
 
 			while (true) {
 				Socket sock = ss.accept();
-				new ServerThread(sock, serverName);
+				new ServerThread(sock, serverName, books);
 			}
 		} catch (Exception ex) {
 			logger.log(Level.SEVERE, "An error occurred in the server application", ex);
