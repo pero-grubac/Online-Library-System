@@ -122,4 +122,20 @@ public class AppConfig {
 	public String getDefaultHost() {
 		return getProperty("HOST");
 	}
+
+	public String getRabbitMQUser() {
+		return getProperty("RABBITMQ_USER");
+	}
+
+	public String getRabbitMQPass() {
+		return getProperty("RABBITMQ_PASS");
+	}
+
+	public String getExchangeName() {
+		return getProperty("EXCHANGE_NAME");
+	}
+
+	public String getDirect() {
+		return getProperty("DIRECT");
+	}
 }

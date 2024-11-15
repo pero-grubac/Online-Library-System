@@ -90,4 +90,12 @@ public class AppConfig {
 	public String getRabbitMQPass() {
 		return getProperty("RABBITMQ_PASS");
 	}
+
+	public String getExchangeName() {
+		return getProperty("EXCHANGE_NAME");
+	}
+
+	public String getDirect() {
+		return getProperty("DIRECT");
+	}
 }

@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 import org.unibl.etf.mdp.library.model.BookDto;
 import org.unibl.etf.mdp.supplier.logger.FileLogger;
 import org.unibl.etf.mdp.supplier.mock.MockSupppliers;
+import org.unibl.etf.mdp.supplier.mq.DirectReceiver;
 import org.unibl.etf.mdp.supplier.properties.AppConfig;
 import org.unibl.etf.mdp.supplier.server.Server;
 import org.unibl.etf.mdp.supplier.services.SupplierServerService;
@@ -53,7 +54,19 @@ public class App {
 		}
 
 		scanner.close();
-
+		DirectReceiver receiver;
+		try {
+			receiver = DirectReceiver.getInstance();
+			receiver.startListening(supplierName, msg -> {
+				System.out.println("Received message: " + msg);
+			});
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		Server server = new Server(supplierName, supplierBooks.get(supplierName));
+
+		
+
 	}
 }

@@ -6,5 +6,8 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/amqp-client-4.1.0.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.7.21.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-simple-1.7.22.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
