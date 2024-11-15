@@ -54,7 +54,7 @@ public class App {
 		}
 
 		scanner.close();
-	//	Server server = new Server(supplierName, supplierBooks.get(supplierName));
+
 		Server server = Server.getInstance(supplierName, supplierBooks.get(supplierName));
 		Thread serverThread = new Thread(server);
 		serverThread.start();
