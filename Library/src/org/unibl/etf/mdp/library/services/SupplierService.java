@@ -29,7 +29,7 @@ public class SupplierService {
 		try (Socket sock = new Socket(InetAddress.getByName(HOST), port);
 				ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
 				ObjectInputStream in = new ObjectInputStream(sock.getInputStream())) {
-
+			
 			out.writeObject(request);
 			out.flush();
 

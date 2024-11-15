@@ -18,7 +18,7 @@ import org.unibl.etf.mdp.supplier.server.ServerThread;
 public class ServerThread extends Thread {
 	public static final AppConfig conf = new AppConfig();
 	private static final Logger logger = FileLogger.getLogger(ServerThread.class.getName());
-	
+
 	private static final String END_MSG = conf.getEndMsg();
 	private static final String GET_DTO_MSG = conf.getDtoMsg();
 	private static final String OK_MSG = conf.getOkMsg();
@@ -48,6 +48,7 @@ public class ServerThread extends Thread {
 			while (true) {
 				try {
 					request = (Message) in.readObject();
+
 					if (GET_DTO_MSG.equals(request.getType())) {
 						for (BookDto book : books) {
 							Message response = new Message(GET_DTO_MSG, serverName, book);
