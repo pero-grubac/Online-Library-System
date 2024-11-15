@@ -17,6 +17,7 @@ public class DiscoveryServerService {
 	private static final AppConfig conf = new AppConfig();
 	private static final int SUPPLIER_SERVER_TCP_PORT = conf.getDiscoveryServerTCPPort();
 	private static final Logger logger = FileLogger.getLogger(DiscoveryServerService.class.getName());
+	private static final String HOST = conf.getDefaultHost();
 
 	public static Map<String, String> getSuppliers() {
 		Map<String, String> suppliers = new HashMap<>();
@@ -24,7 +25,7 @@ public class DiscoveryServerService {
 		String endMsg = conf.getEndMsg();
 		Message msg = new Message(disMsg);
 		try {
-			InetAddress addr = InetAddress.getByName("localhost");
+			InetAddress addr = InetAddress.getByName(HOST);
 			Socket sock = new Socket(addr, SUPPLIER_SERVER_TCP_PORT);
 
 			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
@@ -34,7 +35,7 @@ public class DiscoveryServerService {
 			out.flush();
 
 			Message response = (Message) in.readObject();
-			String serverList =(String) response.getBody();
+			String serverList = (String) response.getBody();
 			String[] entries = serverList.replace("{", "").replace("}", "").split(", ");
 			for (String entry : entries) {
 				String[] keyValue = entry.split("=");

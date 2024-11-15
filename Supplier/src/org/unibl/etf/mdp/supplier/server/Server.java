@@ -18,7 +18,8 @@ public class Server {
 	private static final AppConfig conf = new AppConfig();
 	private static final Logger logger = FileLogger.getLogger(Server.class.getName());
 	private static final int DISCOVERY_SERVER_TCP = conf.getDiscoveryServerTCPPort();
-
+	private static final String HOST = conf.getDefaultHost();
+	
 	private String serverName;
 	private int serverPort;
 	private List<BookDto> books;
@@ -50,7 +51,7 @@ public class Server {
 
 		Message msg = new Message(discoveryMsg, serverName, String.valueOf(serverPort));
 
-		try (Socket discoverySocket = new Socket(InetAddress.getByName("localhost"), DISCOVERY_SERVER_TCP);
+		try (Socket discoverySocket = new Socket(InetAddress.getByName(HOST), DISCOVERY_SERVER_TCP);
 				ObjectOutputStream out = new ObjectOutputStream(discoverySocket.getOutputStream());
 				ObjectInputStream in = new ObjectInputStream(discoverySocket.getInputStream())) {
 
