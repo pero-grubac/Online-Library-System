@@ -47,6 +47,10 @@ public class AppConfig {
 		return getIntegerProperty("DISCOVERY_SERVER_TCP_PORT");
 	}
 
+	public int getLibraryTCPPort() {
+		return getIntegerProperty("LIBRARY_TCP_PORT");
+	}
+
 	public String getLogDir() {
 		return getProperty("LOG_DIR");
 	}

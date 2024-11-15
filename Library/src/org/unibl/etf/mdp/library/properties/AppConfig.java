@@ -98,4 +98,8 @@ public class AppConfig {
 	public String getDirect() {
 		return getProperty("DIRECT");
 	}
+
+	public int getTCPPort() {
+		return getIntegerProperty("TCP_PORT");
+	}
 }
