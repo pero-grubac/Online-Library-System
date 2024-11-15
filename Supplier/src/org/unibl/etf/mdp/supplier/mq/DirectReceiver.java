@@ -28,7 +28,6 @@ public class DirectReceiver {
         connection = ConnectionFactoryUtil.createConnection();
         channel = connection.createChannel();
         channel.exchangeDeclare(EXCHANGE_NAME, "direct");
-        System.out.println("ok");
     }
 
     public static synchronized DirectReceiver getInstance() throws Exception {

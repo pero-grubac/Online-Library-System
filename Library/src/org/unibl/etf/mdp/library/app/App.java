@@ -38,7 +38,6 @@ public class App {
 		AppConfig conf = new AppConfig();
 		String req = conf.getRequestMsg();
 		Message msg = new Message(req, "biblioteka:port", suppliersBooks.get(supplierName).get(0));
-		System.out.println(msg);
 		DirectSender sender;
 		try {
 			sender = DirectSender.getInstance();
