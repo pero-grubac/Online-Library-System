@@ -102,9 +102,11 @@ public class AppConfig {
 	public String getOkMsg() {
 		return getProperty("OK");
 	}
+
 	public String getDiscoverAllMsg() {
 		return getProperty("DISCOVER_ALL");
 	}
+
 	public String getRequestMsg() {
 		return getProperty("REQUEST");
 	}
@@ -115,5 +117,9 @@ public class AppConfig {
 
 	public String getDenialMsg() {
 		return getProperty("DENIAL");
+	}
+
+	public String getDefaultHost() {
+		return getProperty("HOST");
 	}
 }

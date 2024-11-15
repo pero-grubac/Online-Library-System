@@ -18,10 +18,10 @@ import org.unibl.etf.mdp.supplier.server.ServerThread;
 public class ServerThread extends Thread {
 	public static final AppConfig conf = new AppConfig();
 	private static final Logger logger = FileLogger.getLogger(ServerThread.class.getName());
-	private static final String getDTOMsg = conf.getDtoMsg();
-	private static final String endMsg = conf.getEndMsg();
-	private static final String getAllMsg = conf.getDtoMsg();
-	private static final String okMsg = conf.getOkMsg();
+	
+	private static final String END_MSG = conf.getEndMsg();
+	private static final String GET_DTO_MSG = conf.getDtoMsg();
+	private static final String OK_MSG = conf.getOkMsg();
 
 	private Socket sock;
 	private ObjectInputStream in;
@@ -48,23 +48,23 @@ public class ServerThread extends Thread {
 			while (true) {
 				try {
 					request = (Message) in.readObject();
-					if (getAllMsg.equals(request.getType())) {
+					if (GET_DTO_MSG.equals(request.getType())) {
 						for (BookDto book : books) {
-							Message response = new Message(getAllMsg, serverName, book);
+							Message response = new Message(GET_DTO_MSG, serverName, book);
 							out.writeObject(response);
 							out.flush();
 
 							Message acknowledgment = (Message) in.readObject(); // Čekanje na `okMsg` od klijenta
-							if (!okMsg.equals(acknowledgment.getType())) {
+							if (!OK_MSG.equals(acknowledgment.getType())) {
 								logger.warning("Did not receive OK acknowledgment for book: " + book);
 								break;
 							}
 						}
-						Message endMessage = new Message(endMsg, serverName);
+						Message endMessage = new Message(END_MSG, serverName);
 						out.writeObject(endMessage); // Slanje `endMsg` kao znak kraja
 						out.flush();
 						break;
-					} else if (endMsg.equals(request.getType())) {
+					} else if (END_MSG.equals(request.getType())) {
 						System.out.println("Ending connection for supplier " + serverName);
 						break;
 					} else {

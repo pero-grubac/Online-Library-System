@@ -14,7 +14,8 @@ public class App {
 	public static void main(String[] args) {
 		Map<String, String> suppliers = new HashMap<>();
 		suppliers = DiscoveryServerService.getSuppliers();
-
+		Map<String,List<BookDto>> suppliersBooks = new HashMap<>();
+		
 		suppliers.entrySet().stream()
 				.forEach(entry -> System.out.println("Server: " + entry.getKey() + ", Port: " + entry.getValue()));
 
@@ -25,7 +26,7 @@ public class App {
 		if (suppliers.containsKey(supplierName)) {
 			List<BookDto> books = SupplierService.getOfferedBooks(supplierName,
 					Integer.parseInt(suppliers.get(supplierName)));
-			books.stream().forEach(b -> System.out.println(b));
+			suppliersBooks.put(supplierName, books);
 		} else {
 			System.out.println("Invalid supplier name. Please try again.");
 		}

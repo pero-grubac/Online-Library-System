@@ -78,4 +78,16 @@ public class AppConfig {
 	public String getOkMsg() {
 		return getProperty("OK");
 	}
+
+	public String getDefaultHost() {
+		return getProperty("HOST");
+	}
+
+	public String getRabbitMQUser() {
+		return getProperty("RABBITMQ_USER");
+	}
+
+	public String getRabbitMQPass() {
+		return getProperty("RABBITMQ_PASS");
+	}
 }
