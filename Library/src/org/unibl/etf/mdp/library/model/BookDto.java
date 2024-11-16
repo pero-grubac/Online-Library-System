@@ -12,19 +12,29 @@ public class BookDto implements Serializable {
 	private String author;
 	private String language;
 	private Date releaseDate;
+	private String preview;
 	private int price;
 
 	public BookDto() {
 		super();
 	}
 
-	public BookDto(String title, String author, String language, Date releaseDate, int price) {
+	public BookDto(String title, String author, String language, Date releaseDate, int price, String preview) {
 		super();
 		this.title = title;
 		this.author = author;
 		this.language = language;
 		this.releaseDate = releaseDate;
 		this.price = price;
+		this.preview = preview;
+	}
+
+	public BookDto(Book book) {
+		this.title = book.getTitle();
+		this.author = book.getAuthor();
+		this.language = book.getLanguage();
+		this.releaseDate = book.getReleaseDate();
+		this.price = book.getPrice();
 	}
 
 	public String getTitle() {
@@ -65,6 +75,14 @@ public class BookDto implements Serializable {
 
 	public void setPrice(int price) {
 		this.price = price;
+	}
+
+	public String getPreview() {
+		return preview;
+	}
+
+	public void setPreview(String preview) {
+		this.preview = preview;
 	}
 
 	@Override
