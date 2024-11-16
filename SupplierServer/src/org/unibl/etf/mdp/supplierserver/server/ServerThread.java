@@ -27,6 +27,8 @@ public class ServerThread extends Thread {
 	private static final Logger logger = FileLogger.getLogger(ServerThread.class.getName());
 	private static final String getDTOMsg = conf.getDtoMsg();
 	private static final String endMsg = conf.getEndMsg();
+	private static final int PREVIEW_LINES = conf.getPreviewLines();
+	private static final String START_MARKER = conf.getStartMarker();
 
 	private Socket sock;
 	private ObjectInputStream in;
@@ -61,6 +63,7 @@ public class ServerThread extends Thread {
 
 					// Slanje odgovora klijentu
 					BookDto bookdto = new BookDto(book);
+					bookdto.setPreview(getPreview(book.getContent()));
 					out.writeObject(bookdto);
 					out.flush();
 					System.out.println("Sent book to supplier " + supplierName);
@@ -79,6 +82,30 @@ public class ServerThread extends Thread {
 		} finally {
 			cleanup();
 		}
+	}
+
+	private String getPreview(String content) {
+		String[] lines = content.split("\n");
+		StringBuilder result = new StringBuilder();
+		boolean startFound = false;
+		int linesRead = 0;
+
+		for (String line : lines) {
+			if (!startFound) {
+				if (line.contains(START_MARKER)) {
+					startFound = true;
+				}
+				continue;
+			}
+
+			result.append(line).append("\n");
+			linesRead++;
+			if (linesRead >= PREVIEW_LINES) {
+				break;
+			}
+		}
+		return result.toString();
+
 	}
 
 	private void cleanup() {
