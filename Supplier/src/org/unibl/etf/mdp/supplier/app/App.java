@@ -63,9 +63,10 @@ public class App {
 			receiver = DirectReceiver.getInstance();
 			receiver.startListening(supplierName, msg -> {
 				System.out.println("Received message: " + msg);
+				
+				// ocekuj List<BookDto>
 			});
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

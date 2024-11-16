@@ -11,6 +11,7 @@ import org.unibl.etf.mdp.library.logger.FileLogger;
 import org.unibl.etf.mdp.library.model.BookDto;
 import org.unibl.etf.mdp.library.properties.AppConfig;
 import org.unibl.etf.mdp.library.server.ServerThread;
+import org.unibl.etf.mdp.library.services.BookService;
 
 public class Server implements Runnable {
 	private static final AppConfig conf = new AppConfig();
@@ -47,7 +48,11 @@ public class Server implements Runnable {
 			while (running.get()) {
 				try {
 					Socket sock = serverSocket.accept();
-					new ServerThread(sock);
+
+					BookService bookService = new BookService();
+					ServerThread serverThread = new ServerThread(sock);
+					serverThread.addObserver(bookService);
+					serverThread.start();
 				} catch (Exception e) {
 					if (!running.get()) {
 						System.out.println("Server is shutting down...");
