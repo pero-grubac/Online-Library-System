@@ -55,14 +55,14 @@ public class ServerThread extends Thread {
 							out.writeObject(response);
 							out.flush();
 
-							Message acknowledgment = (Message) in.readObject(); 
+							Message acknowledgment = (Message) in.readObject();
 							if (!OK_MSG.equals(acknowledgment.getType())) {
 								logger.warning("Did not receive OK acknowledgment for book: " + book);
 								break;
 							}
 						}
 						Message endMessage = new Message(END_MSG, serverName);
-						out.writeObject(endMessage); 
+						out.writeObject(endMessage);
 						out.flush();
 						break;
 					} else if (END_MSG.equals(request.getType())) {
