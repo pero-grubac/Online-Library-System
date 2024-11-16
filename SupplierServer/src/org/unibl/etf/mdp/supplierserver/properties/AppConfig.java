@@ -86,4 +86,12 @@ public class AppConfig {
 	public String getDefaultHost() {
 		return getProperty("HOST");
 	}
+
+	public int getPreviewLines() {
+		return getIntegerProperty("PREVIEW_LINES");
+	}
+
+	public String getStartMarker() {
+		return getProperty("START_MARKER");
+	}
 }
