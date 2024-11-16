@@ -52,7 +52,7 @@ public class DirectReceiver {
                     ObjectInputStream objIn = new ObjectInputStream(byteIn);
                     Message message = (Message) objIn.readObject();
 
-                    handler.handleMessage(message); // Delegate message handling to the user-provided handler
+                    handler.handleMessage(message); 
                 } catch (ClassNotFoundException e) {
                     System.err.println("Failed to deserialize message: " + e.getMessage());
                 }
