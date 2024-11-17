@@ -1,4 +1,4 @@
-package org.unibl.etf.mdp.libraryserver.service;
+package org.unibl.etf.mdp.libraryserver.repository;
 
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
@@ -17,48 +17,31 @@ import org.unibl.etf.mdp.libraryservice.logger.FileLogger;
 import org.unibl.etf.mdp.libraryservice.properties.AppConfig;
 import org.unibl.etf.mdp.model.User;
 
-public class UserXMLService {
+public class UserRepository {
 	private static final AppConfig conf = new AppConfig();
-	private static final Logger logger = FileLogger.getLogger(UserXMLService.class.getName());
+	private static final Logger logger = FileLogger.getLogger(UserRepository.class.getName());
 	private static final String USERS_FOLDER = conf.getUsersFolder();
 	private static final String USERS_FILE = conf.getUsersFile();
 
-	public User add(User user) {
-		List<User> users = getAll();
-		int nextId = users.isEmpty() ? 1 : users.stream().mapToInt(User::getId).max().orElse(0) + 1;
-        user.setId(nextId);
-        
-		if (!users.contains(user)) {
-			users.add(user);
-			create(users);
-			return user;
-		}
-		logger.log(Level.INFO, "User exists: " + user.getUsername());
-		return null;
-	}
-
-	private void create(List<User> users) {
+	public void saveAll(List<User> users) {
 		try (XMLEncoder encoder = new XMLEncoder(new FileOutputStream(getFilePath()))) {
 			encoder.writeObject(users);
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Error while creating: " + e.getMessage(), e);
+			logger.log(Level.SEVERE, "Error while saving users: " + e.getMessage(), e);
 		}
-
 	}
 
-	public List<User> getAll() {
+	public List<User> findAll() {
 		try (XMLDecoder decoder = new XMLDecoder(new FileInputStream(getFilePath()))) {
 			return (List<User>) decoder.readObject();
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Errore while reading: " + e.getMessage(), e);
+			logger.log(Level.WARNING, "Error while reading users: " + e.getMessage(), e);
 			return new ArrayList<>();
 		}
 	}
 
-	public User getByUsername(String username) {
-		List<User> users = getAll();
-		Optional<User> user = users.stream().filter(u -> u.getUsername().equals(username)).findFirst();
-		return user.orElse(null);
+	public Optional<User> findByUsername(String username) {
+		return findAll().stream().filter(u -> u.getUsername().equals(username)).findFirst();
 	}
 
 	private String getFilePath() {
