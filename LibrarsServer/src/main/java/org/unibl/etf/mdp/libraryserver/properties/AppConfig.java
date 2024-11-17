@@ -1,4 +1,4 @@
-package org.unibl.etf.mdp.libraryservice.properties;
+package org.unibl.etf.mdp.libraryserver.properties;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,7 +14,7 @@ public class AppConfig {
 
 	private void loadProperties() {
 		try (InputStream input = getClass().getClassLoader()
-				.getResourceAsStream("org/unibl/etf/mdp/libraryservice/properties/app.properties")) {
+				.getResourceAsStream("org/unibl/etf/mdp/libraryserver/properties/app.properties")) {
 			if (input == null) {
 				System.out.println("Sorry, unable to find app.properties");
 				return;
