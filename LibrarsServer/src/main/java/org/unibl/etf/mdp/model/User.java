@@ -11,9 +11,23 @@ public class User {
 
 	private String username;
 	private String password;
+	private StatusEnum status; // Dodato polje status
 
 	public User() {
 		super();
+	}
+
+	public User(int id, String firstName, String lastName, String address, String email, String username,
+			String password, StatusEnum status) {
+		super();
+		this.id = id;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.address = address;
+		this.email = email;
+		this.username = username;
+		this.password = password;
+		this.status = status;
 	}
 
 	public User(int id, String firstName, String lastName, String address, String email, String username,
@@ -28,6 +42,18 @@ public class User {
 		this.password = password;
 	}
 
+	public User(String firstName, String lastName, String address, String email, String username, String password,
+			StatusEnum status) {
+		super();
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.address = address;
+		this.email = email;
+		this.username = username;
+		this.password = password;
+		this.status = status;
+	}
+
 	public User(String firstName, String lastName, String address, String email, String username, String password) {
 		super();
 		this.firstName = firstName;
@@ -36,6 +62,7 @@ public class User {
 		this.email = email;
 		this.username = username;
 		this.password = password;
+
 	}
 
 	public User(String username, String password) {
@@ -100,6 +127,14 @@ public class User {
 		this.password = password;
 	}
 
+	public StatusEnum getStatus() {
+		return status;
+	}
+
+	public void setStatus(StatusEnum status) {
+		this.status = status;
+	}
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(username);
@@ -120,7 +155,6 @@ public class User {
 	@Override
 	public String toString() {
 		return "User" + " [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + ", address=" + address
-				+ ", email=" + email + ", username=" + username + ", password=" + password + "]";
+				+ ", email=" + email + ", username=" + username + ", password=" + password + ", status=" + status + "]";
 	}
-
 }
