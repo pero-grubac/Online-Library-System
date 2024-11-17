@@ -17,10 +17,10 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.unibl.etf.mdp.library.model.Book;
-import org.unibl.etf.mdp.library.model.BookDto;
-import org.unibl.etf.mdp.library.model.Invoice;
-import org.unibl.etf.mdp.library.service.IAccountingService;
+import org.unibl.etf.mdp.model.Book;
+import org.unibl.etf.mdp.model.BookDto;
+import org.unibl.etf.mdp.model.Invoice;
+import org.unibl.etf.mdp.service.IAccountingService;
 import org.unibl.etf.mdp.supplier.logger.FileLogger;
 import org.unibl.etf.mdp.supplier.mock.MockSupppliers;
 import org.unibl.etf.mdp.supplier.mq.DirectReceiver;

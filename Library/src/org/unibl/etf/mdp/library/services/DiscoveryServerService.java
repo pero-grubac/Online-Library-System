@@ -10,8 +10,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.unibl.etf.mdp.library.properties.AppConfig;
+import org.unibl.etf.mdp.model.Message;
 import org.unibl.etf.mdp.library.logger.FileLogger;
-import org.unibl.etf.mdp.library.model.Message;
 
 public class DiscoveryServerService {
 	private static final AppConfig conf = new AppConfig();

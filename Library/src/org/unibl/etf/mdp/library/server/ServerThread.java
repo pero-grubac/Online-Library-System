@@ -15,14 +15,14 @@ import org.unibl.etf.mdp.library.event.Event;
 import org.unibl.etf.mdp.library.event.InvoiceEvent;
 import org.unibl.etf.mdp.library.interfaces.Observer;
 import org.unibl.etf.mdp.library.logger.FileLogger;
-import org.unibl.etf.mdp.library.model.Book;
-import org.unibl.etf.mdp.library.model.Invoice;
-import org.unibl.etf.mdp.library.model.Message;
 import org.unibl.etf.mdp.library.observer.BookObserver;
 import org.unibl.etf.mdp.library.observer.InvoiceObserver;
 import org.unibl.etf.mdp.library.properties.AppConfig;
 import org.unibl.etf.mdp.library.services.BookService;
 import org.unibl.etf.mdp.library.services.InvoiceService;
+import org.unibl.etf.mdp.model.Book;
+import org.unibl.etf.mdp.model.Invoice;
+import org.unibl.etf.mdp.model.Message;
 
 public class ServerThread extends Thread {
 	public static final AppConfig conf = new AppConfig();

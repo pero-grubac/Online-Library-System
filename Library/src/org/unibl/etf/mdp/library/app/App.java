@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-import org.unibl.etf.mdp.library.model.BookDto;
-import org.unibl.etf.mdp.library.model.Message;
 import org.unibl.etf.mdp.library.mq.DirectSender;
 import org.unibl.etf.mdp.library.observer.BookObserver;
 import org.unibl.etf.mdp.library.observer.InvoiceObserver;
@@ -17,6 +15,8 @@ import org.unibl.etf.mdp.library.services.BookService;
 import org.unibl.etf.mdp.library.services.DiscoveryServerService;
 import org.unibl.etf.mdp.library.services.InvoiceService;
 import org.unibl.etf.mdp.library.services.SupplierService;
+import org.unibl.etf.mdp.model.BookDto;
+import org.unibl.etf.mdp.model.Message;
 
 public class App {
 

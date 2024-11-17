@@ -12,11 +12,11 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.unibl.etf.mdp.library.model.Book;
-import org.unibl.etf.mdp.library.model.BookDto;
-import org.unibl.etf.mdp.library.model.BookSupplier;
 import org.unibl.etf.mdp.supplier.properties.AppConfig;
 import org.unibl.etf.mdp.supplier.templates.Tuple;
+import org.unibl.etf.mdp.model.Book;
+import org.unibl.etf.mdp.model.BookDto;
+import org.unibl.etf.mdp.model.BookSupplier;
 import org.unibl.etf.mdp.supplier.logger.FileLogger;
 
 public class MockSupppliers {

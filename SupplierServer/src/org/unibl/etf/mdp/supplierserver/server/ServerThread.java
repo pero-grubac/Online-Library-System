@@ -13,9 +13,9 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.unibl.etf.mdp.library.model.Book;
-import org.unibl.etf.mdp.library.model.BookDto;
-import org.unibl.etf.mdp.library.model.Message;
+import org.unibl.etf.mdp.model.Book;
+import org.unibl.etf.mdp.model.BookDto;
+import org.unibl.etf.mdp.model.Message;
 import org.unibl.etf.mdp.supplierserver.logger.FileLogger;
 import org.unibl.etf.mdp.supplierserver.properties.AppConfig;
 import org.unibl.etf.mdp.supplierserver.service.BookService;
