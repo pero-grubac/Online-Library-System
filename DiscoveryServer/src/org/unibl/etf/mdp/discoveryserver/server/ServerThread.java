@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 
 import org.unibl.etf.mdp.discoveryserver.logger.FileLogger;
 import org.unibl.etf.mdp.discoveryserver.properties.AppConfig;
-import org.unibl.etf.mdp.library.model.Message;
+import org.unibl.etf.mdp.model.Message;
 
 public class ServerThread extends Thread {
 	public static final AppConfig conf = new AppConfig();

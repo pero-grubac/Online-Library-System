@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.unibl.etf.mdp.library.model.Book;
-import org.unibl.etf.mdp.library.model.BookDto;
-import org.unibl.etf.mdp.library.model.Message;
+import org.unibl.etf.mdp.model.Book;
+import org.unibl.etf.mdp.model.BookDto;
+import org.unibl.etf.mdp.model.Message;
 import org.unibl.etf.mdp.supplier.app.App;
 import org.unibl.etf.mdp.supplier.logger.FileLogger;
 import org.unibl.etf.mdp.supplier.properties.AppConfig;

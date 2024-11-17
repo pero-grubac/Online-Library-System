@@ -9,8 +9,8 @@ import java.util.logging.Logger;
 
 import org.unibl.etf.mdp.accountingserver.logger.FileLogger;
 import org.unibl.etf.mdp.accountingserver.properties.AppConfig;
-import org.unibl.etf.mdp.library.service.AccountingService;
-import org.unibl.etf.mdp.library.service.IAccountingService;
+import org.unibl.etf.mdp.service.AccountingService;
+import org.unibl.etf.mdp.service.IAccountingService;
 
 
 public class App {

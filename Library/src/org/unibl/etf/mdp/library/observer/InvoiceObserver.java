@@ -1,9 +1,9 @@
 package org.unibl.etf.mdp.library.observer;
 
-import org.unibl.etf.mdp.library.model.Invoice;
 import org.unibl.etf.mdp.library.event.Event;
 import org.unibl.etf.mdp.library.event.InvoiceEvent;
 import org.unibl.etf.mdp.library.interfaces.Observer;
+import org.unibl.etf.mdp.model.Invoice;
 
 public class InvoiceObserver implements Observer {
 	@Override

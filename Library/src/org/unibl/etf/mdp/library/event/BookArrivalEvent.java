@@ -2,7 +2,7 @@ package org.unibl.etf.mdp.library.event;
 
 import java.util.List;
 
-import org.unibl.etf.mdp.library.model.Book;
+import org.unibl.etf.mdp.model.Book;
 
 public class BookArrivalEvent extends Event {
 	private final List<Book> books;

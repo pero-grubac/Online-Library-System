@@ -6,8 +6,8 @@ import java.util.List;
 import org.unibl.etf.mdp.library.event.Event;
 import org.unibl.etf.mdp.library.event.InvoiceEvent;
 import org.unibl.etf.mdp.library.interfaces.Observer;
-import org.unibl.etf.mdp.library.model.Invoice;
 import org.unibl.etf.mdp.library.observer.InvoiceObserver;
+import org.unibl.etf.mdp.model.Invoice;
 
 public class InvoiceService {
 	private static InvoiceService instance;

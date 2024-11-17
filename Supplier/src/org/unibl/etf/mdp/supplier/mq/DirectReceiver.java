@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.concurrent.TimeoutException;
 
-import org.unibl.etf.mdp.library.model.Message;
+import org.unibl.etf.mdp.model.Message;
 import org.unibl.etf.mdp.supplier.properties.AppConfig;
 
 import com.rabbitmq.client.AMQP;
