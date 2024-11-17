@@ -10,11 +10,19 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.unibl.etf.mdp.library.interfaces.BookObserver;
+import org.unibl.etf.mdp.library.event.BookArrivalEvent;
+import org.unibl.etf.mdp.library.event.Event;
+import org.unibl.etf.mdp.library.event.InvoiceEvent;
+import org.unibl.etf.mdp.library.interfaces.Observer;
 import org.unibl.etf.mdp.library.logger.FileLogger;
 import org.unibl.etf.mdp.library.model.Book;
+import org.unibl.etf.mdp.library.model.Invoice;
 import org.unibl.etf.mdp.library.model.Message;
+import org.unibl.etf.mdp.library.observer.BookObserver;
+import org.unibl.etf.mdp.library.observer.InvoiceObserver;
 import org.unibl.etf.mdp.library.properties.AppConfig;
+import org.unibl.etf.mdp.library.services.BookService;
+import org.unibl.etf.mdp.library.services.InvoiceService;
 
 public class ServerThread extends Thread {
 	public static final AppConfig conf = new AppConfig();
@@ -24,14 +32,15 @@ public class ServerThread extends Thread {
 	private static final String DENIAL_MSG = conf.getDenialMsg();
 	private static final String OK_MSG = conf.getOkMsg();
 	private static final String END_MSG = conf.getEndMsg();
+	private static final String INVOICE_MSG = conf.getInvoiceMsg();
 
 	private Socket sock;
 
 	private ObjectInputStream in;
 	private ObjectOutputStream out;
+
 	private String serverName;
 	private List<Book> books;
-	private final List<BookObserver> observers = new ArrayList<>();
 
 	public ServerThread(Socket socket) {
 		this.sock = socket;
@@ -55,24 +64,29 @@ public class ServerThread extends Thread {
 					if (APPROVE_MSG.equals(request.getType())) {
 						Object body = request.getBody();
 						List<Book> receivedBooks = new ArrayList<>();
-						
+
 						if (body instanceof List) {
 							receivedBooks = (List<Book>) body;
-	                        books.addAll(receivedBooks); 
+							books.addAll(receivedBooks);
 						} else if (body instanceof Book) {
 							Book book = (Book) body;
-	                        books.add(book); 
-	                        receivedBooks.add(book);
+							books.add(book);
+							receivedBooks.add(book);
 						} else {
 							logger.log(Level.WARNING, "Unexpected body type: " + body.getClass().getName());
 						}
-						
-						notifyObservers(receivedBooks);
-						
+
+						BookService.getInstance().notifyBookArrival(receivedBooks);
+
 						Message endMessage = new Message(END_MSG, serverName);
 						out.writeObject(endMessage);
 						out.flush();
+						//break;
+					} else if (INVOICE_MSG.equals(request.getType())) {
+						Invoice invoice = (Invoice) request.getBody();
+						InvoiceService.getInstance().notifyInvoiceReceived(invoice);
 						break;
+
 					} else if (DENIAL_MSG.equals(request.getType())) {
 						Message endMessage = new Message(END_MSG, serverName);
 						out.writeObject(endMessage);
@@ -109,17 +123,4 @@ public class ServerThread extends Thread {
 		}
 	}
 
-	public void addObserver(BookObserver observer) {
-		observers.add(observer);
-	}
-
-	public void removeObserver(BookObserver observer) {
-		observers.remove(observer);
-	}
-
-	private void notifyObservers(List<Book> books) {
-		for (BookObserver observer : observers) {
-			observer.onBooksArrived(books);
-		}
-	}
 }
