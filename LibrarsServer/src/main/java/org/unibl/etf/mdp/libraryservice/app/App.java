@@ -1,9 +1,11 @@
 package org.unibl.etf.mdp.libraryservice.app;
 
+import org.unibl.etf.mdp.libraryservice.mock.MockUsers;
+
 public class App {
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+		MockUsers.createUsers();
 
 	}
 

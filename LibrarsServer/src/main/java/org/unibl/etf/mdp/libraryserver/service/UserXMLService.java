@@ -5,6 +5,7 @@ import java.beans.XMLEncoder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +56,14 @@ public class UserXMLService {
 		if (!folder.exists()) {
 			folder.mkdirs();
 		}
-		return Paths.get(USERS_FOLDER, USERS_FILE).toString();
+		  File file = new File(Paths.get(USERS_FOLDER, USERS_FILE).toString());
+		    if (!file.exists()) {
+		        try {
+		            file.createNewFile(); 
+		        } catch (IOException e) {
+		            logger.log(Level.SEVERE, "Error while creating file: " + file.getPath(), e);
+		        }
+		    }
+		    return file.getPath();
 	}
 }
