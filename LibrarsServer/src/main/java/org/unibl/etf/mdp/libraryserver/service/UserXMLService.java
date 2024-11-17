@@ -25,6 +25,9 @@ public class UserXMLService {
 
 	public User add(User user) {
 		List<User> users = getAll();
+		int nextId = users.isEmpty() ? 1 : users.stream().mapToInt(User::getId).max().orElse(0) + 1;
+        user.setId(nextId);
+        
 		if (!users.contains(user)) {
 			users.add(user);
 			create(users);
