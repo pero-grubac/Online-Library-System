@@ -27,12 +27,12 @@ public class AccountingService implements IAccountingService {
 	}
 
 	@Override
-	public double addInvoice(Invoice invoice, String username) throws RemoteException {
+	public Invoice addInvoice(Invoice invoice, String username) throws RemoteException {
 		double vat = invoice.getTotalPrice() * 0.17;
 		BigDecimal vatRounded = BigDecimal.valueOf(vat).setScale(2, RoundingMode.HALF_UP);
 		invoice.setVAT(vatRounded.doubleValue());
 		saveInvoice(invoice, username);
-		return invoice.getVAT();
+		return invoice;
 	}
 
 	private void saveInvoice(Invoice invoice, String supplierName) {

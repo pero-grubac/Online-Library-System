@@ -19,6 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.unibl.etf.mdp.library.model.Book;
+import org.unibl.etf.mdp.library.model.BookDto;
 import org.unibl.etf.mdp.supplierserver.logger.FileLogger;
 import org.unibl.etf.mdp.supplierserver.properties.AppConfig;
 
@@ -32,11 +33,12 @@ public class BookService {
 	private static final AppConfig conf = new AppConfig();
 	private static final Random rand = new Random();
 	private static final Logger logger = FileLogger.getLogger(BookService.class.getName());
+	private static final String DIRECTORY = conf.getSuppliersDir();
+	private static final String EXT = conf.getBookExt();
 
 	public BookService() {
 		/*
-		 * String redisHost = conf.getRedisHost(); 
-		 * int redisPort = conf.getRedisPort();
+		 * String redisHost = conf.getRedisHost(); int redisPort = conf.getRedisPort();
 		 * pool = new JedisPool(new JedisPoolConfig(), redisHost, redisPort);
 		 */
 	}
@@ -54,24 +56,7 @@ public class BookService {
 			while ((line = contentReader.readLine()) != null) {
 				content.append(line).append("\n");
 			}
-			book.setContent(content.toString());
-
-			book.setTitle(parsePattern("Title:\\s*(.*)", content.toString()));
-			book.setAuthor(parsePattern("Author:\\s*(.*)", content.toString()));		
-			book.setLanguage(parsePattern("Language:\\s*(.*)", content.toString()));
-
-			String releaseDateStr = parsePattern("Release date:\\s*([A-Za-z]+\\s+\\d{1,2},\\s+\\d{4})",
-					content.toString());
-			if (releaseDateStr != null) {
-				try {
-					book.setReleaseDate(new SimpleDateFormat("MMMM d, yyyy", Locale.ENGLISH).parse(releaseDateStr));
-				} catch (ParseException ex) {
-					logger.log(Level.SEVERE, "An error occurred in the server application", ex);
-				} catch (Exception ex) {
-					logger.log(Level.SEVERE, "An error occurred in the server application", ex);
-				}
-			}
-			book.setPrice(rand.nextInt(100) + 1);
+			book = parseString(content);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
@@ -88,6 +73,28 @@ public class BookService {
 		return book;
 	}
 
+	private Book parseString(StringBuilder content) {
+		Book book = new Book();
+		book.setContent(content.toString());
+
+		book.setTitle(parsePattern("Title:\\s*(.*)", content.toString()));
+		book.setAuthor(parsePattern("Author:\\s*(.*)", content.toString()));
+		book.setLanguage(parsePattern("Language:\\s*(.*)", content.toString()));
+
+		String releaseDateStr = parsePattern("Release date:\\s*([A-Za-z]+\\s+\\d{1,2},\\s+\\d{4})", content.toString());
+		if (releaseDateStr != null) {
+			try {
+				book.setReleaseDate(new SimpleDateFormat("MMMM d, yyyy", Locale.ENGLISH).parse(releaseDateStr));
+			} catch (ParseException ex) {
+				logger.log(Level.SEVERE, "An error occurred in the server application", ex);
+			} catch (Exception ex) {
+				logger.log(Level.SEVERE, "An error occurred in the server application", ex);
+			}
+		}
+		book.setPrice(rand.nextInt(100) + 1);
+		return book;
+	}
+
 	private String parsePattern(String pattern, String text) {
 		Pattern p = Pattern.compile(pattern, Pattern.MULTILINE);
 		Matcher m = p.matcher(text);
@@ -98,9 +105,7 @@ public class BookService {
 	}
 
 	public void saveBookToFile(Book book, String username) {
-		String dir = conf.getSuppliersDir();
-		String ext = conf.getBookExt();
-		Path filePath = Paths.get(dir, username, book.toString() + ext);
+		Path filePath = Paths.get(DIRECTORY, username, book.toString() + EXT);
 
 		try {
 			Files.createDirectories(filePath.getParent());
@@ -116,6 +121,19 @@ public class BookService {
 		}
 	}
 
+	public Book readBookFromFile(BookDto bookDto, String username) {
+		Book book = new Book();
+		Path filePath = Paths.get(DIRECTORY, username, bookDto.toString() + EXT);
+		StringBuilder content = new StringBuilder();
+
+		try {
+			Files.lines(filePath).forEach(line -> content.append(line).append("\n"));
+			book = parseString(content);
+		} catch (IOException ex) {
+			System.err.println("An error occurred while reading the book content: " + ex.getMessage());
+		}
+		return book;
+	}
 	/*
 	 * public void saveBookToRedis(Book book, String username) { String bookId =
 	 * "supplier:" + username + ":book:" + book.hashCode(); Map<String, String>

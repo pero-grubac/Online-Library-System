@@ -25,8 +25,11 @@ import jdk.internal.org.jline.terminal.TerminalBuilder.SystemOutput;
 public class ServerThread extends Thread {
 	public static final AppConfig conf = new AppConfig();
 	private static final Logger logger = FileLogger.getLogger(ServerThread.class.getName());
-	private static final String getDTOMsg = conf.getDtoMsg();
-	private static final String endMsg = conf.getEndMsg();
+
+	private static final String GET_DTO_MSG = conf.getDtoMsg();
+	private static final String END_MSG = conf.getEndMsg();
+	private static final String GET_MODE_MSG = conf.getModelMsg();
+
 	private static final int PREVIEW_LINES = conf.getPreviewLines();
 	private static final String START_MARKER = conf.getStartMarker();
 
@@ -52,25 +55,32 @@ public class ServerThread extends Thread {
 			while (true) {
 				request = (Message) in.readObject();
 
-				// Provera tipa poruke
-				if (getDTOMsg.equals(request.getType())) {
-					String url = (String) request.getBody(); // Preuzimanje URL-a knjige iz tela poruke
-					String supplierName = request.getUsername(); // Preuzimanje korisničkog imena dobavljača
+				if (GET_DTO_MSG.equals(request.getType())) {
+					String url = (String) request.getBody();
+					String supplierName = request.getUsername();
 
-					// Preuzimanje knjige na osnovu URL-a i čuvanje
 					Book book = service.getBookFromUrl(url);
 					service.saveBookToFile(book, supplierName);
 
-					// Slanje odgovora klijentu
 					BookDto bookdto = new BookDto(book);
 					bookdto.setPreview(getPreview(book.getContent()));
 					out.writeObject(bookdto);
 					out.flush();
-					System.out.println("Sent book to supplier " + supplierName);
+					System.out.println("BookDTO " + bookdto + " Sent to  " + supplierName);
 
-				} else if (endMsg.equals(request.getType())) {
+				} else if (GET_MODE_MSG.equals(request.getType())) {
+					String username = request.getUsername();
+					BookDto bookDto = (BookDto) request.getBody();
+					
+					Book book = service.readBookFromFile(bookDto, username);
+					
+					out.writeObject(book);
+					out.flush();
+					
+					System.out.println("Book " + book + "Sent to  " + username);
+				} else if (END_MSG.equals(request.getType())) {
 					System.out.println("Ending connection for supplier ");
-					break; // Izlazak iz petlje i završetak konekcije
+					break;
 
 				} else {
 					System.out.println("Unknown message type: " + request.getType());

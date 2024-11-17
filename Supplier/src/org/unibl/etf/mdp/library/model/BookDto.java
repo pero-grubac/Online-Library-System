@@ -1,6 +1,7 @@
 package org.unibl.etf.mdp.library.model;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Random;
@@ -105,7 +106,10 @@ public class BookDto implements Serializable {
 
 	@Override
 	public String toString() {
-		return "BookDto [title=" + title + ", author=" + author + ", language=" + language + ", releaseDate="
-				+ releaseDate + ", price=" + price + "]";
+		SimpleDateFormat displayFormat = new SimpleDateFormat("dd.MM.yyyy.");
+		String releaseDateStr = (releaseDate != null) ? displayFormat.format(releaseDate) : "N/A";
+		String result = author + " - " + title + " [" + language + "] (" + releaseDateStr + ")";
+
+		return result.replaceAll("[:\\\\/*?|<>]", "-");
 	}
 }

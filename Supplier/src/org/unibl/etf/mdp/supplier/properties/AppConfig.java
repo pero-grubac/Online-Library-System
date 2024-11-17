@@ -142,4 +142,8 @@ public class AppConfig {
 	public String getDirect() {
 		return getProperty("DIRECT");
 	}
+
+	public String getInvoiceMsg() {
+		return getProperty("INVOICE");
+	}
 }

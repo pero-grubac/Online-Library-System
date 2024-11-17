@@ -102,4 +102,8 @@ public class AppConfig {
 	public int getTCPPort() {
 		return getIntegerProperty("TCP_PORT");
 	}
+
+	public String getInvoiceMsg() {
+		return getProperty("INVOICE");
+	}
 }

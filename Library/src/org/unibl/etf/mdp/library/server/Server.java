@@ -9,6 +9,8 @@ import java.util.logging.Logger;
 
 import org.unibl.etf.mdp.library.logger.FileLogger;
 import org.unibl.etf.mdp.library.model.BookDto;
+import org.unibl.etf.mdp.library.observer.BookObserver;
+import org.unibl.etf.mdp.library.observer.InvoiceObserver;
 import org.unibl.etf.mdp.library.properties.AppConfig;
 import org.unibl.etf.mdp.library.server.ServerThread;
 import org.unibl.etf.mdp.library.services.BookService;
@@ -30,7 +32,7 @@ public class Server implements Runnable {
 	}
 
 	// Synchronized method to ensure only one instance is created
-	public static synchronized Server getInstance(String serverName, List<BookDto> books) {
+	public static synchronized Server getInstance() {
 		if (instance == null) {
 			instance = new Server();
 		}
@@ -40,8 +42,8 @@ public class Server implements Runnable {
 	@Override
 	public void run() {
 		try {
-
-			System.out.println("Library is running on :" + TCP_PORT);
+			serverSocket = new ServerSocket(TCP_PORT);
+			System.out.println("Library is running on : " + TCP_PORT);
 
 			running.set(true);
 
@@ -49,9 +51,8 @@ public class Server implements Runnable {
 				try {
 					Socket sock = serverSocket.accept();
 
-					BookService bookService = new BookService();
+
 					ServerThread serverThread = new ServerThread(sock);
-					serverThread.addObserver(bookService);
 					serverThread.start();
 				} catch (Exception e) {
 					if (!running.get()) {
