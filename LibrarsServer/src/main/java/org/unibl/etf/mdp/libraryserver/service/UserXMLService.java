@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -51,19 +52,25 @@ public class UserXMLService {
 		}
 	}
 
+	public User getByUsername(String username) {
+		List<User> users = getAll();
+		Optional<User> user = users.stream().filter(u -> u.getUsername().equals(username)).findFirst();
+		return user.orElse(null);
+	}
+
 	private String getFilePath() {
 		File folder = new File(USERS_FOLDER);
 		if (!folder.exists()) {
 			folder.mkdirs();
 		}
-		  File file = new File(Paths.get(USERS_FOLDER, USERS_FILE).toString());
-		    if (!file.exists()) {
-		        try {
-		            file.createNewFile(); 
-		        } catch (IOException e) {
-		            logger.log(Level.SEVERE, "Error while creating file: " + file.getPath(), e);
-		        }
-		    }
-		    return file.getPath();
+		File file = new File(Paths.get(USERS_FOLDER, USERS_FILE).toString());
+		if (!file.exists()) {
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				logger.log(Level.SEVERE, "Error while creating file: " + file.getPath(), e);
+			}
+		}
+		return file.getPath();
 	}
 }
