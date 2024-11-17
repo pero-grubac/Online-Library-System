@@ -1,4 +1,4 @@
-package org.unibl.etf.mdp.libraryservice.logger;
+package org.unibl.etf.mdp.libraryserver.logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,7 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-import org.unibl.etf.mdp.libraryservice.properties.AppConfig;
+import org.unibl.etf.mdp.libraryserver.properties.AppConfig;
 
 public class FileLogger {
 	public static Logger getLogger(String className) {

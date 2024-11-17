@@ -13,8 +13,8 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.unibl.etf.mdp.libraryservice.logger.FileLogger;
-import org.unibl.etf.mdp.libraryservice.properties.AppConfig;
+import org.unibl.etf.mdp.libraryserver.logger.FileLogger;
+import org.unibl.etf.mdp.libraryserver.properties.AppConfig;
 import org.unibl.etf.mdp.model.User;
 
 public class UserRepository {
