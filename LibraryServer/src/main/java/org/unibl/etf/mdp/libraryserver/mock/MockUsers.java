@@ -1,14 +1,23 @@
-package org.unibl.etf.mdp.llibraryserver.mock;
+package org.unibl.etf.mdp.libraryserver.mock;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.unibl.etf.mdp.libraryserver.service.UserService;
 import org.unibl.etf.mdp.model.User;
+import org.unibl.etf.mdp.model.UserDto;
 
 public class MockUsers {
 
 	public static void createUsers() {
+		UserService service = new UserService();
+
+		List<UserDto> existingUsers = service.getAll();
+
+		if (!existingUsers.isEmpty()) {
+			System.out.println("Users already exist in the repository. Skipping creation.");
+			return;
+		}
 		List<User> mockUsers = new ArrayList<>();
 		mockUsers.add(new User("John", "Doe", "123 Main St", "john.doe@example.com", "john", "john"));
 		mockUsers.add(new User("Jane", "Smith", "456 Elm St", "jane.smith@example.com", "jane", "jane"));
@@ -21,14 +30,9 @@ public class MockUsers {
 		mockUsers.add(new User("James", "Anderson", "579 Spruce St", "james.anderson@example.com", "james", "james"));
 		mockUsers.add(new User("Laura", "Martinez", "864 Poplar St", "laura.martinez@example.com", "laura", "laura"));
 
-		UserService service = new UserService();
-
 		for (User user : mockUsers) {
 			service.add(user);
 		}
 
-		service.approver("john");
-		service.block("jane");
-		service.reject("michael");
 	}
 }
