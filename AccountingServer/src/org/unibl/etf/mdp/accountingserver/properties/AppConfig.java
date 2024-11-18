@@ -43,6 +43,10 @@ public class AppConfig {
 		return getProperty("SECURITY_DIR");
 	}
 
+	public String getImageExt() {
+		return getProperty("IMAGE_EXT");
+	}
+
 	public String getRegistryName() {
 		return getProperty("REGISTRY_NAME");
 	}

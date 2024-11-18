@@ -1,5 +1,6 @@
 package org.unibl.etf.mdp.supplierserver.service;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -35,6 +36,7 @@ public class BookService {
 	private static final Logger logger = FileLogger.getLogger(BookService.class.getName());
 	private static final String DIRECTORY = conf.getSuppliersDir();
 	private static final String EXT = conf.getBookExt();
+	private static final String IMAGE_URL_END = conf.getImageUrlEnd();
 
 	public BookService() {
 		/*
@@ -56,7 +58,14 @@ public class BookService {
 			while ((line = contentReader.readLine()) != null) {
 				content.append(line).append("\n");
 			}
-			book = parseString(content);
+			int lastSlashIndex = url.lastIndexOf('/');
+			String baseUrl = url.substring(0, lastSlashIndex + 1);
+			String fileName = url.substring(lastSlashIndex + 1, url.lastIndexOf('.'));
+
+			String photoUrl = baseUrl + fileName + IMAGE_URL_END;
+
+			BufferedImage image = ImageService.downloadImage(photoUrl);
+			book.setCoverImage(image);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {

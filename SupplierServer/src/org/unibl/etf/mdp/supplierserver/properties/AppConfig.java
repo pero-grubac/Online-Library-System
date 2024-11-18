@@ -94,4 +94,12 @@ public class AppConfig {
 	public String getStartMarker() {
 		return getProperty("START_MARKER");
 	}
+
+	public String getImageExt() {
+		return getProperty("IMAGE_EXT");
+	}
+
+	public String getImageUrlEnd() {
+		return getProperty("IMAGE_URL_END");
+	}
 }
