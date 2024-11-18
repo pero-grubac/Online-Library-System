@@ -24,7 +24,8 @@ public class UserService {
 	public void initMockData() {
 		if (repository.findAll().isEmpty()) {
 			List<User> mockUsers = MockUsers.mockData();
-			repository.saveAll(mockUsers);
+			for (User user : mockUsers)
+				add(user);
 			System.out.println("Mock data initialized.");
 		} else {
 			System.out.println("Users already exist. Mock data not initialized.");

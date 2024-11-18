@@ -8,6 +8,7 @@ import java.util.Objects;
 
 public class Invoice implements Serializable {
 
+	private static final long serialVersionUID = 1L;
 	private LocalDate date;
 	private List<BookDto> books;
 	private int totalPrice;
