@@ -90,4 +90,28 @@ public class AppConfig {
 	public String getStartMarker() {
 		return getProperty("START_MARKER");
 	}
+
+	public int getMailPort() {
+		return getIntegerProperty("MAIL_PORT");
+	}
+
+	public String getMailHost() {
+		return getProperty("MAIL_HOST");
+	}
+
+	public String getMailUser() {
+		return getProperty("MAIL_USERNAME");
+	}
+
+	public String getMailPass() {
+		return getProperty("MAIL_PASSWORD");
+	}
+
+	public String getKeyStorePath() {
+		return getProperty("KEY_STORE_PATH");
+	}
+
+	public String getKeyStorePass() {
+		return getProperty("KEY_STORE_PASSWORD");
+	}
 }
