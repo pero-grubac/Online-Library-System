@@ -55,8 +55,8 @@ public class BookRepository {
 		}
 	}
 
-	public Book getByTitleAndAuthor(String title, String author) {
-		String bookKey = BOOK_KEY_PREFIX + title.toLowerCase() + ":" + author.toLowerCase();
+	public Book getByKey(String key) {
+		String bookKey = BOOK_KEY_PREFIX + key;
 
 		try (Jedis jedis = pool.getResource()) {
 			if (!jedis.exists(bookKey)) {
@@ -89,13 +89,9 @@ public class BookRepository {
 		return books;
 	}
 
-	public boolean deleteByTitleAndAuthor(String title, String author) {
-		if (title == null || author == null) {
-			logger.log(Level.WARNING, "Title and author must not be null.");
-			return false;
-		}
+	public boolean deleteByKey(String key) {
 
-		String bookKey = BOOK_KEY_PREFIX + title.toLowerCase() + ":" + author.toLowerCase();
+		String bookKey = BOOK_KEY_PREFIX + key;
 
 		try (Jedis jedis = pool.getResource()) {
 			if (!jedis.exists(bookKey)) {

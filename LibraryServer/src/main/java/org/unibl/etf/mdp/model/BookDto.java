@@ -105,6 +105,13 @@ public class BookDto implements Serializable {
 		this.coverImage = coverImage;
 	}
 
+	public String getKey() {
+		SimpleDateFormat displayFormat = new SimpleDateFormat("dd.MM.yyyy.");
+		String releaseDateStr = (releaseDate != null) ? displayFormat.format(releaseDate) : "N/A";
+
+		return (author + ":" + title + ":" + language + ":" + releaseDateStr).toLowerCase();
+	}
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(author, language, price, releaseDate, title);
