@@ -2,6 +2,11 @@ package org.unibl.etf.mdp.libraryserver.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.unibl.etf.mdp.libraryserver.repository.UserRepository;
 import org.unibl.etf.mdp.model.StatusEnum;
@@ -9,7 +14,10 @@ import org.unibl.etf.mdp.model.User;
 import org.unibl.etf.mdp.model.UserDto;
 
 public class UserService {
-	private final UserRepository repository = new UserRepository();
+	private final UserRepository repository = UserRepository.getInstance();
+
+	public UserService() {
+	}
 
 	public UserDto add(User user) {
 		List<User> users = repository.findAll();
@@ -28,6 +36,7 @@ public class UserService {
 
 	public List<UserDto> getAll() {
 		List<User> users = repository.findAll();
+
 		List<UserDto> userDtos = new ArrayList<>();
 		users.forEach(user -> userDtos.add(new UserDto(user)));
 		return userDtos;

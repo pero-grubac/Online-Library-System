@@ -1,17 +1,26 @@
 package org.unibl.etf.mdp.model;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class UserDto {
+public class User implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 	private int id;
 	private String firstName;
 	private String lastName;
 	private String address;
 	private String email;
-	private StatusEnum status;
 	private String username;
+	private String password;
+	private StatusEnum status = StatusEnum.PENDING;;
 
-	public UserDto(int id, String firstName, String lastName, String address, String email, String username) {
+	public User() {
+		super();
+	}
+
+	public User(int id, String firstName, String lastName, String address, String email, String username,
+			String password, StatusEnum status) {
 		super();
 		this.id = id;
 		this.firstName = firstName;
@@ -19,21 +28,30 @@ public class UserDto {
 		this.address = address;
 		this.email = email;
 		this.username = username;
+		this.password = password;
+		this.status = status;
 	}
 
-	public UserDto() {
+	public User(int id, String firstName, String lastName, String address, String email, String username,
+			String password) {
 		super();
-		// TODO Auto-generated constructor stub
+		this.id = id;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.address = address;
+		this.email = email;
+		this.username = username;
+		this.password = password;
 	}
 
-	public UserDto(User user) {
-		this.id = user.getId();
-		this.firstName = user.getFirstName();
-		this.lastName = user.getLastName();
-		this.address = user.getAddress();
-		this.email = user.getEmail();
-		this.username = user.getUsername();
-		this.status = user.getStatus();
+	public User(String firstName, String lastName, String address, String email, String username, String password) {
+		super();
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.address = address;
+		this.email = email;
+		this.username = username;
+		this.password = password;
 	}
 
 	public int getId() {
@@ -84,6 +102,14 @@ public class UserDto {
 		this.username = username;
 	}
 
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
 	public StatusEnum getStatus() {
 		return status;
 	}
@@ -105,14 +131,13 @@ public class UserDto {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		UserDto other = (UserDto) obj;
+		User other = (User) obj;
 		return Objects.equals(username, other.username);
 	}
 
 	@Override
 	public String toString() {
-		return "UserDto [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + ", address=" + address
-				+ ", email=" + email + ", status=" + status + ", username=" + username + "]";
+		return "User [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + ", address=" + address
+				+ ", email=" + email + ", username=" + username + ", password=" + password + ", status=" + status + "]";
 	}
-
 }
