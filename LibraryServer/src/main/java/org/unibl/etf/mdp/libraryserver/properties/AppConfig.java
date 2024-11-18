@@ -49,7 +49,21 @@ public class AppConfig {
 
 	public String getUsersFolder() {
 		return getProperty("USERS_FOLDER");
-	}public String getUsersFile() {
+	}
+
+	public String getUsersFile() {
 		return getProperty("USERS_FILE");
+	}
+
+	public int getRedisPort() {
+		return getIntegerProperty("REDIS_PORT");
+	}
+
+	public String getRedisHost() {
+		return getProperty("REDIS_HOST");
+	}
+
+	public String getBookKeyPrefix() {
+		return getProperty("BOOK_KEY_PREFIX");
 	}
 }

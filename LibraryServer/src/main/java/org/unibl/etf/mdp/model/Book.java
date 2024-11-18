@@ -1,8 +1,11 @@
 package org.unibl.etf.mdp.model;
 
 import java.io.Serializable;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 
@@ -112,5 +115,48 @@ public class Book implements Serializable {
 		String releaseDateStr = (releaseDate != null) ? displayFormat.format(releaseDate) : "N/A";
 
 		return author + " - " + title + " [" + language + "] (" + releaseDateStr + ")";
+	}
+
+	public Map<String, String> toHashMap() {
+		Map<String, String> map = new HashMap<>();
+		
+		map.put("title", title);
+		map.put("author", author);
+		map.put("language", language);
+
+		if (releaseDate != null) {
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
+			map.put("releaseDate", dateFormat.format(releaseDate));
+		}
+
+		map.put("content", content != null ? content : "");
+		return map;
+	}
+
+	public static Book fromMap(Map<String, String> map) {
+		Book book = new Book();
+
+		book.setTitle(map.get("title"));
+		book.setAuthor(map.get("author"));
+		book.setLanguage(map.get("language"));
+
+		String releaseDateStr = map.get("releaseDate");
+		if (releaseDateStr != null) {
+			try {
+				SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
+				book.setReleaseDate(dateFormat.parse(releaseDateStr));
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+		}
+
+		book.setContent(map.get("content"));
+		return book;
+	}
+
+	public String getKey() {
+		SimpleDateFormat displayFormat = new SimpleDateFormat("dd.MM.yyyy.");
+		String releaseDateStr = (releaseDate != null) ? displayFormat.format(releaseDate) : "N/A";
+		return author + ":" + title + ":" + language + ":" + releaseDateStr;
 	}
 }
