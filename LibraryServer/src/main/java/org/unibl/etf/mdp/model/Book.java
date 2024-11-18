@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.Base64;
 
 import javax.imageio.ImageIO;
 
@@ -124,6 +125,10 @@ public class Book implements Serializable {
 
 		map.put("content", content != null ? content : "");
 
+		if (coverImage != null) {
+			map.put("coverImage", Base64.getEncoder().encodeToString(getCoverImageAsBytes()));
+		}
+
 		return map;
 	}
 
@@ -145,6 +150,13 @@ public class Book implements Serializable {
 		}
 
 		book.setContent(map.get("content"));
+
+		String coverImageBase64 = map.get("coverImage");
+		if (coverImageBase64 != null) {
+			byte[] imageBytes = Base64.getDecoder().decode(coverImageBase64);
+			book.setCoverImageFromBytes(imageBytes);
+		}
+
 		return book;
 	}
 

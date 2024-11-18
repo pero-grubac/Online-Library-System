@@ -70,4 +70,8 @@ public class AppConfig {
 	public String getBookKeyPrefix() {
 		return getProperty("BOOK_KEY_PREFIX");
 	}
+
+	public String getImageKeySufix() {
+		return getProperty("IMAGE_KEY_SUFIX");
+	}
 }
