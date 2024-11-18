@@ -74,4 +74,12 @@ public class AppConfig {
 	public String getImageKeySufix() {
 		return getProperty("IMAGE_KEY_SUFIX");
 	}
+
+	public int getPreviewLines() {
+		return getIntegerProperty("PREVIEW_LINES");
+	}
+
+	public String getStartMarker() {
+		return getProperty("START_MARKER");
+	}
 }

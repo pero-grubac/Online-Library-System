@@ -104,7 +104,7 @@ public class Book implements Serializable {
 		SimpleDateFormat displayFormat = new SimpleDateFormat("dd.MM.yyyy.");
 		String releaseDateStr = (releaseDate != null) ? displayFormat.format(releaseDate) : "N/A";
 
-		return author + ":" + title + ":" + language + ":" + releaseDateStr;
+	    return (author + ":" + title + ":" + language + ":" + releaseDateStr).toLowerCase();
 	}
 
 	@Override
