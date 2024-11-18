@@ -30,11 +30,7 @@ public class App {
 	public static void main(String[] args) {
 		// MockUsers.createUsers();
 		// System.out.println("Starting server...");
-		UserController controller = new UserController();
-		List<UserDto> usrs = controller.getAll();
-		System.out.println("main");
-		usrs.forEach(System.out::println);
-		System.out.println("endpoint");
+
 		String getAll = "http://localhost:8080/LibraryServer/api/users/";
 		try (InputStream is = new URL(getAll).openStream();
 				BufferedReader rd = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
