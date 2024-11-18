@@ -43,6 +43,14 @@ public class AppConfig {
 		return getProperty("IMAGE_EXT");
 	}
 
+	public String getBookExt() {
+		return getProperty("BOOK_EXT");
+	}
+
+	public String getZipFolder() {
+		return getProperty("ZIP_FOLDER");
+	}
+
 	public String getLogDir() {
 		return getProperty("LOG_DIR");
 	}
