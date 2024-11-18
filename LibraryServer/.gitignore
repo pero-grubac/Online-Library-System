@@ -2,3 +2,5 @@
 /bin/
 /log/
 /users/
+/mail/
+keystore.jks

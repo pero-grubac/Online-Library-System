@@ -37,8 +37,8 @@ public class BookService {
 		return bookDto;
 	}
 
-	public void delete(String key) {
-		repository.deleteByKey(key);
+	public boolean delete(String key) {
+		return repository.deleteByKey(key);
 	}
 
 	public Book getByKey(String key) {

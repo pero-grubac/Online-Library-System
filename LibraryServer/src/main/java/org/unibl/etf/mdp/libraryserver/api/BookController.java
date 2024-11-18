@@ -62,31 +62,43 @@ public class BookController {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response addBook(Book book) {
-		try {
-			BookDto bookDto = service.add(book);
+	public Response add(Book book) {
+	    try {
+	        if (book == null || book.getTitle() == null || book.getTitle().isBlank() || 
+	            book.getAuthor() == null || book.getAuthor().isBlank() || 
+	            book.getLanguage() == null || book.getLanguage().isBlank()) {
+	            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid book data: Missing required fields").build();
+	        }
 
-			if (bookDto == null) {
-				return Response.status(Response.Status.BAD_REQUEST).entity("Invalid book data").build();
-			}
+	        BookDto bookDto = service.add(book);
 
-			return Response.status(Response.Status.CREATED).entity(bookDto).build();
-		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Error while adding book: " + e.getMessage(), e);
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error adding book").build();
-		}
+	        if (bookDto == null) {
+	            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid book data").build();
+	        }
+
+	        return Response.status(Response.Status.CREATED).entity(bookDto).build();
+	    } catch (Exception e) {
+	        logger.log(Level.SEVERE, "Error while adding book: " + e.getMessage(), e);
+	        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error adding book").build();
+	    }
 	}
+
 
 	@DELETE
 	@Path("/{key}")
 	public Response deleteBook(@PathParam("key") String key) {
-		try {
-			service.delete(key);
+	    try {
+	        boolean deleted = service.delete(key);
 
-			return Response.status(Response.Status.NO_CONTENT).build();
-		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Error while deleting book: " + e.getMessage(), e);
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error deleting book").build();
-		}
+	        if (!deleted) {
+	            return Response.status(Response.Status.NOT_FOUND).entity("Book not found").build();
+	        }
+
+	        return Response.status(Response.Status.NO_CONTENT).build();
+	    } catch (Exception e) {
+	        logger.log(Level.SEVERE, "Error while deleting book: " + e.getMessage(), e);
+	        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error deleting book").build();
+	    }
 	}
+
 }
