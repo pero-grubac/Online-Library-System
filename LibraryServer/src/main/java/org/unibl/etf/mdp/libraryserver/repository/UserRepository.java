@@ -50,6 +50,7 @@ public class UserRepository {
 	public List<User> findAll() {
 		try (XMLDecoder decoder = new XMLDecoder(new BufferedInputStream(new FileInputStream(getFilePath())));) {
 			ArrayList<User> users = (ArrayList<User>) decoder.readObject();
+
 			return users;
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Error while reading users: " + e.getMessage(), e);

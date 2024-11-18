@@ -8,6 +8,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.unibl.etf.mdp.libraryserver.mock.MockUsers;
 import org.unibl.etf.mdp.libraryserver.repository.UserRepository;
 import org.unibl.etf.mdp.model.StatusEnum;
 import org.unibl.etf.mdp.model.User;
@@ -17,6 +18,17 @@ public class UserService {
 	private final UserRepository repository = UserRepository.getInstance();
 
 	public UserService() {
+		initMockData();
+	}
+
+	public void initMockData() {
+		if (repository.findAll().isEmpty()) {
+			List<User> mockUsers = MockUsers.mockData();
+			repository.saveAll(mockUsers);
+			System.out.println("Mock data initialized.");
+		} else {
+			System.out.println("Users already exist. Mock data not initialized.");
+		}
 	}
 
 	public UserDto add(User user) {
