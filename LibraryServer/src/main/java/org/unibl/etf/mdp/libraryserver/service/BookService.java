@@ -37,25 +37,12 @@ public class BookService {
 		return bookDto;
 	}
 
-	public void delete(BookDto bookDto) {
-		if (bookDto == null || bookDto.getTitle() == null || bookDto.getTitle().isBlank() || bookDto.getAuthor() == null
-				|| bookDto.getAuthor().isBlank() || bookDto.getLanguage() == null || bookDto.getLanguage().isBlank()) {
-			logger.log(Level.SEVERE, "Uncomplete book");
-			return;
-		}
-		repository.deleteByKey(bookDto.getKey());
+	public void delete(String key) {
+		repository.deleteByKey(key);
 	}
 
-	public Book getByKey(BookDto bookDto) {
-		if (bookDto == null) {
-			logger.log(Level.SEVERE, "Uncomplete book");
-			return null;
-		}
-		if (bookDto.getKey() == null || bookDto.getKey().isBlank()) {
-			logger.log(Level.SEVERE, "Uncomplete book");
-			return null;
-		}
-		return repository.getByKey(bookDto.getKey());
+	public Book getByKey(String key) {
+		return repository.getByKey(key);
 	}
 
 	public List<BookDto> getAll() {
