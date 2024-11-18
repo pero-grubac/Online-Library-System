@@ -39,6 +39,10 @@ public class AppConfig {
 		return Integer.parseInt(properties.getProperty(key));
 	}
 
+	public String getImageExt() {
+		return getProperty("IMAGE_EXT");
+	}
+
 	public String getLogDir() {
 		return getProperty("LOG_DIR");
 	}

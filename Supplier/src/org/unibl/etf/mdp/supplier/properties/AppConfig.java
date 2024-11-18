@@ -146,4 +146,8 @@ public class AppConfig {
 	public String getInvoiceMsg() {
 		return getProperty("INVOICE");
 	}
+
+	public String getImageExt() {
+		return getProperty("IMAGE_EXT");
+	}
 }

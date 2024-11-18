@@ -1,5 +1,8 @@
 package org.unibl.etf.mdp.model;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -9,16 +12,22 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 
+import javax.imageio.ImageIO;
+
+import org.unibl.etf.mdp.supplierserver.properties.AppConfig;
+
 public class Book implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private static final Random rand = new Random();
+	private static final AppConfig conf = new AppConfig();
+
 	private String title;
 	private String author;
 	private String language;
 	private Date releaseDate;
 	private String content;
-	private byte[] coverImage;
+	private BufferedImage coverImage;
 	private int price;
 
 	public Book() {
@@ -66,11 +75,11 @@ public class Book implements Serializable {
 		this.releaseDate = releaseDate;
 	}
 
-	public byte[] getCoverImage() {
+	public BufferedImage getCoverImage() {
 		return coverImage;
 	}
 
-	public void setCoverImage(byte[] coverImage) {
+	public void setCoverImage(BufferedImage coverImage) {
 		this.coverImage = coverImage;
 	}
 
@@ -132,6 +141,29 @@ public class Book implements Serializable {
 		return book;
 	}
 
+	public byte[] getCoverImageAsBytes() {
+		if (coverImage == null) {
+			return null;
+		}
+		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+			ImageIO.write(coverImage, conf.getImageExt(), baos);
+			return baos.toByteArray();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public void setCoverImageFromBytes(byte[] imageBytes) {
+		if (imageBytes != null) {
+			try (ByteArrayInputStream bais = new ByteArrayInputStream(imageBytes)) {
+				this.coverImage = ImageIO.read(bais);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -149,7 +181,7 @@ public class Book implements Serializable {
 	public String toString() {
 		SimpleDateFormat displayFormat = new SimpleDateFormat("dd.MM.yyyy.");
 		String releaseDateStr = (releaseDate != null) ? displayFormat.format(releaseDate) : "N/A";
-		String result = author + " - " + title + " ["  + language + "] (" + releaseDateStr + ")";
+		String result = author + " - " + title + " [" + language + "] (" + releaseDateStr + ")";
 
 		return result.replaceAll("[:\\\\/*?|<>]", "-");
 	}
