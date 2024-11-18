@@ -34,14 +34,12 @@ public class ZipService {
 		}
 
 		try {
-			// Kreiranje putanje za ZIP folder
 			Path zipFolderPath = Paths.get(ZIP_FOLDER);
 			if (!Files.exists(zipFolderPath)) {
 				Files.createDirectories(zipFolderPath);
 				logger.info("Created ZIP folder: " + zipFolderPath.toAbsolutePath());
 			}
 
-			// Generisanje putanje za ZIP fajl
 			Path zipFilePath = zipFolderPath.resolve(zipFileName);
 
 			try (ZipOutputStream zipOut = new ZipOutputStream(Files.newOutputStream(zipFilePath))) {
@@ -53,7 +51,6 @@ public class ZipService {
 						continue;
 					}
 
-					// Dodavanje knjige u ZIP
 					String fileName = book.getTitle().replaceAll("[:\\\\/*?|<>]", "-") + BOOK_EXT;
 					ZipEntry entry = new ZipEntry(fileName);
 					zipOut.putNextEntry(entry);
