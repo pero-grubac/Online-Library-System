@@ -110,4 +110,20 @@ public class AppConfig {
 	public String getInvoiceMsg() {
 		return getProperty("INVOICE");
 	}
+
+	public String getServerBaseUrl() {
+		return getProperty("SERVER_BASE_URL");
+	}
+
+	public String getServerUsersUrl() {
+		return getProperty("USERS_URL");
+	}
+
+	public String getServerBooksUrl() {
+		return getProperty("BOOKS_URL");
+	}
+
+	public String getStatus() {
+		return getProperty("BOOKS_STATUS");
+	}
 }

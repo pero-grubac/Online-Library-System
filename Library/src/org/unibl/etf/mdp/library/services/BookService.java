@@ -7,10 +7,13 @@ import org.unibl.etf.mdp.library.event.BookArrivalEvent;
 import org.unibl.etf.mdp.library.event.Event;
 import org.unibl.etf.mdp.library.interfaces.Observer;
 import org.unibl.etf.mdp.library.observer.BookObserver;
+import org.unibl.etf.mdp.library.properties.AppConfig;
 import org.unibl.etf.mdp.model.Book;
 
 public class BookService {
-
+	private static AppConfig conf = new AppConfig();
+	private static final String BOOKS_URL = conf.getServerBooksUrl();
+	
 	private static BookService instance;
 	private final List<BookObserver> observers = new ArrayList<>();
 
@@ -42,4 +45,6 @@ public class BookService {
 			observer.onEvent(event);
 		}
 	}
+	// TODO libraryservice getall and delete
+
 }

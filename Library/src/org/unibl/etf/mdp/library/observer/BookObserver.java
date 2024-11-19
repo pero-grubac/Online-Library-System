@@ -20,6 +20,6 @@ public class BookObserver implements Observer {
 
 	private void handleBooksArrival(List<Book> books) {
 		System.out.println("Books arrived: " + books);
-		// Dodajte dodatnu logiku obrade ako je potrebno
+		// TODO call libraryserver add book
 	}
 }

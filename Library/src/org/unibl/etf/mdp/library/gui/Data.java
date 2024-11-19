@@ -9,12 +9,14 @@ import org.unibl.etf.mdp.library.observer.InvoiceObserver;
 import org.unibl.etf.mdp.library.server.Server;
 import org.unibl.etf.mdp.library.services.BookService;
 import org.unibl.etf.mdp.library.services.InvoiceService;
+import org.unibl.etf.mdp.library.services.UserService;
 
 public class Data {
 	private static BookObserver bookObserver = new BookObserver();
 	private static InvoiceObserver invoiceObserver = new InvoiceObserver();
 	private static BookService bookService = BookService.getInstance();
 	private static InvoiceService invoiceService = InvoiceService.getInstance();
+	private static UserService userService = UserService.getInstance();
 	private static DirectSender sender;
 	private Server server;
 	private Thread serverThread;
@@ -86,6 +88,10 @@ public class Data {
 
 	public static InvoiceService getInvoiceService() {
 		return invoiceService;
+	}
+
+	public static UserService getUserService() {
+		return userService;
 	}
 
 }
