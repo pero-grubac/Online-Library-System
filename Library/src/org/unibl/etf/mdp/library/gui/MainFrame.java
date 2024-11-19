@@ -14,10 +14,16 @@ public class MainFrame extends GeneralFrame {
         setLayout(new BorderLayout());
 
         JPanel panel = new JPanel();
+        
         JButton chooseSupplierButton = new JButton("Choose Supplier");
         chooseSupplierButton.addActionListener(e -> new SuppliersFrame().setVisible(true));
-
         panel.add(chooseSupplierButton);
+        
+        JButton manageUsersButton = new JButton("Manage Users");
+        manageUsersButton.addActionListener(e -> new UserFrame().setVisible(true));
+        panel.add(manageUsersButton);
+
+        
         add(panel, BorderLayout.NORTH);
     }
 
