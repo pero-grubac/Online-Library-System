@@ -31,24 +31,21 @@ public class MainFrame extends GeneralFrame {
 		setSize(1000, 700);
 		setLayout(new BorderLayout());
 
-		// Panel za dugme "Requests"
 		JPanel topPanel = new JPanel();
 		JButton requestsButton = new JButton("Requests");
 		topPanel.add(requestsButton);
 
-		add(topPanel, BorderLayout.NORTH); // Dodavanje dugmeta na vrh prozora
+		add(topPanel, BorderLayout.NORTH); 
 
-		// Dodavanje liste knjiga
 		JPanel bookListPanel = new JPanel();
 		bookListPanel.setLayout(new BoxLayout(bookListPanel, BoxLayout.Y_AXIS));
 		JScrollPane scrollPane = new JScrollPane(bookListPanel);
 
 		add(scrollPane, BorderLayout.CENTER);
 
-		Data data = Data.getInstance(new ArrayList<>());
+		Data data = Data.getInstance(new ArrayList<>(), supplierName);
 		if (data.getBooks().isEmpty()) {
-			SupplierServerService serverService = new SupplierServerService();
-			data.setBooks(serverService.getBookDtos(supplierName, bookLinks));
+			data.setBooks(Data.getServerservice().getBookDtos(supplierName, bookLinks));
 		}
 		for (BookDto book : data.getBooks()) {
 			bookListPanel.add(createBookPanel(book));
