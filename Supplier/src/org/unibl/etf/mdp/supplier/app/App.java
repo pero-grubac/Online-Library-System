@@ -40,53 +40,25 @@ public class App {
 
 		System.out.println("Supplier client");
 		initializeRMI();
-	/*	MockSupppliers mock = new MockSupppliers();
-		Map<String, List<String>> supplierData = mock.getSupplierData();
-		Map<String, List<BookDto>> supplierBooks = new HashMap<>();
-
-		SupplierServerService serverService = new SupplierServerService();
-		LibraryService libraryService = new LibraryService();
-		System.out.println("Available suppliers:");
-		for (String supplierName : supplierData.keySet()) {
-			System.out.println("- " + supplierName);
-		}
-
-		Scanner scanner = new Scanner(System.in);
-		System.out.print("Enter supplier name: ");
-		String supplierName = scanner.nextLine();
-
-		if (supplierData.containsKey(supplierName)) {
-			List<String> bookLinks = supplierData.get(supplierName);
-			List<BookDto> books = serverService.getBookDtos(supplierName, bookLinks);
-			supplierBooks.put(supplierName, books);
-		} else {
-			System.out.println("Invalid supplier name. Please try again.");
-		}
-
-		scanner.close();
-
-		Server server = Server.getInstance(supplierName, supplierBooks.get(supplierName));
-		Thread serverThread = new Thread(server);
-		serverThread.start();
-		DirectReceiver receiver;
-		try {
-			receiver = DirectReceiver.getInstance();
-			receiver.startListening(supplierName, msg -> {
-				System.out.println("Received message: " + msg);
-
-				List<BookDto> bookDtos = (List<BookDto>) msg.getBody();
-
-				List<Book> books = serverService.getBooks(supplierName, bookDtos);
-
-				Invoice invoice = libraryService.approveBook(books, supplierName);
-
-				System.out.println(invoice);
-			});
-		} catch (Exception e) {
-			e.printStackTrace();
-		}*/
-		 new LoginFrame().setVisible(true);
-
+		/*
+		 * 
+		 * Server server = Server.getInstance(supplierName,
+		 * supplierBooks.get(supplierName)); Thread serverThread = new Thread(server);
+		 * serverThread.start(); DirectReceiver receiver; try { receiver =
+		 * DirectReceiver.getInstance(); receiver.startListening(supplierName, msg -> {
+		 * System.out.println("Received message: " + msg);
+		 * 
+		 * List<BookDto> bookDtos = (List<BookDto>) msg.getBody();
+		 * 
+		 * List<Book> books = serverService.getBooks(supplierName, bookDtos);
+		 * 
+		 * Invoice invoice = libraryService.approveBook(books, supplierName);
+		 * 
+		 * System.out.println(invoice); }); } catch (Exception e) { e.printStackTrace();
+		 * }
+		 */
+		new LoginFrame().setVisible(true);
+		
 	}
 
 	public static void initializeRMI() {

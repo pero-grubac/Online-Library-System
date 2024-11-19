@@ -64,6 +64,7 @@ public class ServerThread extends Thread {
 
 					BookDto bookdto = new BookDto(book);
 					bookdto.setPreview(getPreview(book.getContent()));
+					
 					out.writeObject(bookdto);
 					out.flush();
 					System.out.println("BookDTO " + bookdto + " Sent to  " + supplierName);
@@ -71,12 +72,12 @@ public class ServerThread extends Thread {
 				} else if (GET_MODE_MSG.equals(request.getType())) {
 					String username = request.getUsername();
 					BookDto bookDto = (BookDto) request.getBody();
-					
+
 					Book book = service.readBookFromFile(bookDto, username);
-					
+
 					out.writeObject(book);
 					out.flush();
-					
+
 					System.out.println("Book " + book + "Sent to  " + username);
 				} else if (END_MSG.equals(request.getType())) {
 					System.out.println("Ending connection for supplier ");
