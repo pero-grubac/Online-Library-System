@@ -13,7 +13,6 @@ import javax.imageio.ImageIO;
 
 import org.unibl.etf.mdp.library.properties.AppConfig;
 
-
 public class BookDto implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Random rand = new Random();
@@ -163,13 +162,15 @@ public class BookDto implements Serializable {
 				&& Objects.equals(releaseDate, other.releaseDate) && Objects.equals(title, other.title);
 	}
 
-	
-
 	@Override
 	public String toString() {
 		String result = author + " - " + title + " [" + language + "] (" + getFormatedDate() + ")";
 
 		return result.replaceAll("[:\\\\/*?|<>]", "-");
+	}
+
+	public String displayBook() {
+		return toString() + " ===> " + price;
 	}
 
 	public String getKey() {

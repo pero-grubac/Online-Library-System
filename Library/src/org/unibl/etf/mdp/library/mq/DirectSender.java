@@ -50,6 +50,8 @@ public class DirectSender {
 		}
 		if (connection != null) {
 			connection.close();
+		}if(instance != null) {
+			instance = null;
 		}
 		System.out.println("DirectSender shutdown complete.");
 	}

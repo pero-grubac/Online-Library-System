@@ -48,7 +48,6 @@ public class ServerThread extends Thread {
 			while (true) {
 				try {
 					request = (Message) in.readObject();
-
 					if (GET_DTO_MSG.equals(request.getType())) {
 						for (BookDto book : books) {
 							Message response = new Message(GET_DTO_MSG, serverName, book);
