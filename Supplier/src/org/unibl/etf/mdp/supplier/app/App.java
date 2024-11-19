@@ -40,23 +40,6 @@ public class App {
 
 		System.out.println("Supplier client");
 		initializeRMI();
-		/*
-		 * 
-		 * Server server = Server.getInstance(supplierName,
-		 * supplierBooks.get(supplierName)); Thread serverThread = new Thread(server);
-		 * serverThread.start(); DirectReceiver receiver; try { receiver =
-		 * DirectReceiver.getInstance(); receiver.startListening(supplierName, msg -> {
-		 * System.out.println("Received message: " + msg);
-		 * 
-		 * List<BookDto> bookDtos = (List<BookDto>) msg.getBody();
-		 * 
-		 * List<Book> books = serverService.getBooks(supplierName, bookDtos);
-		 * 
-		 * Invoice invoice = libraryService.approveBook(books, supplierName);
-		 * 
-		 * System.out.println(invoice); }); } catch (Exception e) { e.printStackTrace();
-		 * }
-		 */
 		new LoginFrame().setVisible(true);
 		
 	}
