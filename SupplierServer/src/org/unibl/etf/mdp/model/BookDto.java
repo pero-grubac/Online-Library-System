@@ -23,8 +23,9 @@ public class BookDto implements Serializable {
 	private String language;
 	private Date releaseDate;
 	private String preview;
-	private BufferedImage coverImage;
 	private int price;
+	private byte[] coverImageBytes;
+	private String imageUrl;
 
 	public BookDto() {
 		super();
@@ -46,7 +47,8 @@ public class BookDto implements Serializable {
 		this.language = book.getLanguage();
 		this.releaseDate = book.getReleaseDate();
 		this.price = book.getPrice();
-		this.coverImage = book.getCoverImage();
+		this.coverImageBytes = book.getCoverImageBytes();
+		this.imageUrl = book.getImageUrl();
 	}
 
 	public String getTitle() {
@@ -97,12 +99,20 @@ public class BookDto implements Serializable {
 		this.preview = preview;
 	}
 
-	public BufferedImage getCoverImage() {
-		return coverImage;
+	public byte[] getCoverImageBytes() {
+		return coverImageBytes;
 	}
 
-	public void setCoverImage(BufferedImage coverImage) {
-		this.coverImage = coverImage;
+	public void setCoverImageBytes(BufferedImage coverImage) {
+		this.coverImageBytes = getCoverImageAsBytes(coverImage);
+	}
+
+	public String getImageUrl() {
+		return imageUrl;
+	}
+
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
 	}
 
 	@Override
@@ -110,26 +120,32 @@ public class BookDto implements Serializable {
 		return Objects.hash(author, language, price, releaseDate, title);
 	}
 
-	public byte[] getCoverImageAsBytes() {
+	public byte[] getCoverImageAsBytes(BufferedImage coverImage) {
 		if (coverImage == null) {
+			System.err.println("Cover image is null. Cannot convert to bytes.");
 			return null;
 		}
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 			ImageIO.write(coverImage, conf.getImageExt(), baos);
 			return baos.toByteArray();
 		} catch (Exception e) {
+			System.err.println("Error while converting cover image to bytes: " + e.getMessage());
 			e.printStackTrace();
 			return null;
 		}
 	}
 
-	public void setCoverImageFromBytes(byte[] imageBytes) {
-		if (imageBytes != null) {
-			try (ByteArrayInputStream bais = new ByteArrayInputStream(imageBytes)) {
-				this.coverImage = ImageIO.read(bais);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+	public BufferedImage getCoverImageFromBytes() {
+		if (coverImageBytes == null) {
+			System.err.println("Cover image bytes are null. Cannot convert to BufferedImage.");
+			return null;
+		}
+		try (ByteArrayInputStream bais = new ByteArrayInputStream(coverImageBytes)) {
+			return ImageIO.read(bais);
+		} catch (Exception e) {
+			System.err.println("Error while converting bytes to cover image: " + e.getMessage());
+			e.printStackTrace();
+			return null;
 		}
 	}
 
@@ -148,10 +164,18 @@ public class BookDto implements Serializable {
 
 	@Override
 	public String toString() {
-		SimpleDateFormat displayFormat = new SimpleDateFormat("dd.MM.yyyy.");
-		String releaseDateStr = (releaseDate != null) ? displayFormat.format(releaseDate) : "N/A";
-		String result = author + " - " + title + " [" + language + "] (" + releaseDateStr + ")";
+		String result = author + " - " + title + " [" + language + "] (" + getFormatedDate() + ")";
 
 		return result.replaceAll("[:\\\\/*?|<>]", "-");
+	}
+
+	public String getKey() {
+
+		return (author + ":" + title + ":" + language + ":" + getFormatedDate()).toLowerCase();
+	}
+
+	public String getFormatedDate() {
+		SimpleDateFormat displayFormat = new SimpleDateFormat("dd.MM.yyyy.");
+		return (releaseDate != null) ? displayFormat.format(releaseDate) : "N/A";
 	}
 }

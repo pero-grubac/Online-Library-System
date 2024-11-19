@@ -58,6 +58,7 @@ public class BookService {
 			while ((line = contentReader.readLine()) != null) {
 				content.append(line).append("\n");
 			}
+			book = parseString(content);
 			int lastSlashIndex = url.lastIndexOf('/');
 			String baseUrl = url.substring(0, lastSlashIndex + 1);
 			String fileName = url.substring(lastSlashIndex + 1, url.lastIndexOf('.'));
@@ -65,7 +66,9 @@ public class BookService {
 			String photoUrl = baseUrl + fileName + IMAGE_URL_END;
 
 			BufferedImage image = ImageService.downloadImage(photoUrl);
-			book.setCoverImage(image);
+
+			book.setCoverImageBytes(image);
+			book.setImageUrl(photoUrl);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {

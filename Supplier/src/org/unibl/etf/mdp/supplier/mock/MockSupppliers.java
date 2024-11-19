@@ -59,9 +59,12 @@ public class MockSupppliers {
 			"https://www.gutenberg.org/cache/epub/132/pg132.txt",
 			"https://www.gutenberg.org/cache/epub/1497/pg1497.txt",
 			"https://www.gutenberg.org/cache/epub/5200/pg5200.txt");
+	private String username;
 
-	public MockSupppliers() {
-		init();
+	public MockSupppliers(String username) {
+		this.username = username;
+		createDirectory(username);
+		createLinks(username);
 	}
 
 	private void init() {
@@ -99,7 +102,8 @@ public class MockSupppliers {
 		}
 	}
 
-	public Map<String, List<String>> getSupplierData() {
+	public Map<String, List<String>> getSuppliersData() {
+		init();
 		Map<String, List<String>> supplierData = new HashMap<>();
 		String dir = conf.getSuppliersDir();
 		String linkFile = conf.getLinksFile();
@@ -118,5 +122,23 @@ public class MockSupppliers {
 		}
 
 		return supplierData;
+	}
+
+	public List<String> getSupplierData() {
+		String dir = conf.getSuppliersDir();
+		String linkFile = conf.getLinksFile();
+		Path linkFilePath = Paths.get(dir, username, linkFile);
+
+		try {
+			if (Files.exists(linkFilePath)) {
+				return Files.readAllLines(linkFilePath);
+			} else {
+				logger.log(Level.WARNING, "Link file does not exist for supplier: " + username);
+				return new ArrayList<>();
+			}
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "An error occurred while reading links for supplier: " + username, e);
+			return new ArrayList<>();
+		}
 	}
 }
