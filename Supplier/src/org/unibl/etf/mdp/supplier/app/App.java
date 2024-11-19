@@ -21,6 +21,7 @@ import org.unibl.etf.mdp.model.Book;
 import org.unibl.etf.mdp.model.BookDto;
 import org.unibl.etf.mdp.model.Invoice;
 import org.unibl.etf.mdp.service.IAccountingService;
+import org.unibl.etf.mdp.supplier.gui.LoginFrame;
 import org.unibl.etf.mdp.supplier.logger.FileLogger;
 import org.unibl.etf.mdp.supplier.mock.MockSupppliers;
 import org.unibl.etf.mdp.supplier.mq.DirectReceiver;
@@ -39,7 +40,7 @@ public class App {
 
 		System.out.println("Supplier client");
 		initializeRMI();
-		MockSupppliers mock = new MockSupppliers();
+	/*	MockSupppliers mock = new MockSupppliers();
 		Map<String, List<String>> supplierData = mock.getSupplierData();
 		Map<String, List<BookDto>> supplierBooks = new HashMap<>();
 
@@ -83,7 +84,8 @@ public class App {
 			});
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
+		}*/
+		 new LoginFrame().setVisible(true);
 
 	}
 
