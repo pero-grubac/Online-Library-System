@@ -2,6 +2,7 @@ package org.unibl.etf.mdp.supplier.gui;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.unibl.etf.mdp.model.Book;
 import org.unibl.etf.mdp.model.BookDto;
@@ -17,6 +18,9 @@ public class Data {
 	private String username;
 	private static final SupplierServerService serverService = new SupplierServerService();
 	private static final LibraryService libraryService = new LibraryService();
+	private Server serverInstance;
+	private Thread serverThread;
+	private List<List<BookDto>> requests = new CopyOnWriteArrayList<>();
 
 	private Data(List<BookDto> books, String username) {
 		this.books = books;
@@ -29,35 +33,31 @@ public class Data {
 		DirectReceiver receiver;
 
 		try {
-		    receiver = DirectReceiver.getInstance();
-		    Thread receiverThread = new Thread(() -> {
-		        try {
-		            receiver.startListening(username, msg -> {
-		                System.out.println("Received message: " + msg);
+			receiver = DirectReceiver.getInstance();
+			Thread receiverThread = new Thread(() -> {
+				try {
+					receiver.startListening(username, msg -> {
+						System.out.println("Received message: " + msg);
 
-		                List<BookDto> bookDtos = (List<BookDto>) msg.getBody();
+						List<BookDto> bookDtos = (List<BookDto>) msg.getBody();
 
-		                List<Book> books = serverService.getBooks(username, bookDtos);
+						addRequest(bookDtos);
+					});
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			});
 
-		                Invoice invoice = libraryService.approveBook(books, username);
-
-		                System.out.println(invoice);
-		            });
-		        } catch (IOException e) {
-		            e.printStackTrace();
-		        }
-		    });
-
-		    receiverThread.start();
+			receiverThread.start();
 		} catch (Exception e) {
-		    e.printStackTrace();
+			e.printStackTrace();
 		}
 
 	}
 
 	private void initServer() {
-		Server server = Server.getInstance(username, books);
-		Thread serverThread = new Thread(server);
+		serverInstance = Server.getInstance(username, books);
+		serverThread = new Thread(serverInstance);
 		serverThread.start();
 	}
 
@@ -68,12 +68,27 @@ public class Data {
 		return instance;
 	}
 
+	public void shutdownServer() {
+		if (serverInstance != null) {
+			serverInstance.shutdown();
+			try {
+				serverThread.join();
+				System.out.println("Server thread terminated.");
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	public List<BookDto> getBooks() {
 		return books;
 	}
 
 	public void setBooks(List<BookDto> books) {
+		shutdownServer();
 		this.books = books;
+		initServer();
+
 	}
 
 	public String getUsername() {
@@ -86,6 +101,18 @@ public class Data {
 
 	public static LibraryService getLibraryservice() {
 		return libraryService;
+	}
+
+	public List<List<BookDto>> getRequests() {
+		return requests;
+	}
+
+	public void addRequest(List<BookDto> bookDtos) {
+		requests.add(bookDtos);
+	}
+
+	public void removeRequest(List<BookDto> bookDtos) {
+		requests.remove(bookDtos);
 	}
 
 }
