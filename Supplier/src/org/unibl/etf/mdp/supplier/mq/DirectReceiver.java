@@ -4,9 +4,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Logger;
 
 import org.unibl.etf.mdp.model.Message;
+import org.unibl.etf.mdp.supplier.logger.FileLogger;
 import org.unibl.etf.mdp.supplier.properties.AppConfig;
+import org.unibl.etf.mdp.supplier.services.LibraryService;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
@@ -20,6 +23,9 @@ public class DirectReceiver {
 	private static final String EXCHANGE_NAME = conf.getExchangeName();
 	private static final String DIRECT = conf.getDirect();
 
+	private static final Logger logger = FileLogger.getLogger(DirectReceiver.class.getName());
+
+	
 	private static DirectReceiver instance;
 	private Channel channel;
 	private Connection connection;
