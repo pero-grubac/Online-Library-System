@@ -2,6 +2,7 @@ package org.unibl.etf.mdp.supplierserver.service;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -11,6 +12,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
@@ -18,6 +20,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.imageio.ImageIO;
 
 import org.unibl.etf.mdp.model.Book;
 import org.unibl.etf.mdp.model.BookDto;
@@ -66,9 +70,19 @@ public class BookService {
 			String photoUrl = baseUrl + fileName + IMAGE_URL_END;
 
 			BufferedImage image = ImageService.downloadImage(photoUrl);
-
-			book.setCoverImageBytes(image);
-			book.setImageUrl(photoUrl);
+			// convert bi to bytes
+			byte[] bytes;
+			try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+				ImageIO.write(image, conf.getImageExt(), baos);
+				bytes = baos.toByteArray();
+			} catch (Exception e) {
+				System.err.println("Error while converting cover image to bytes: " + e.getMessage());
+				e.printStackTrace();
+				return null;
+			}
+			// convert bytes to base64
+			String base64Image = Base64.getEncoder().encodeToString(bytes);
+			book.setCoverImageBase64(base64Image);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {

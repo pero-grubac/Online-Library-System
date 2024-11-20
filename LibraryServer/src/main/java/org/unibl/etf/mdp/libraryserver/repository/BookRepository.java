@@ -25,6 +25,8 @@ public class BookRepository {
 	private BookRepository() {
 		String redisHost = conf.getRedisHost();
 		int redisPort = conf.getRedisPort();
+		System.out.println("Connecting to Redis at " + redisHost + ":" + redisPort);
+
 		pool = new JedisPool(new JedisPoolConfig(), redisHost, redisPort);
 	}
 
@@ -65,7 +67,7 @@ public class BookRepository {
 			}
 
 			Map<String, String> bookMap = jedis.hgetAll(bookKey);
-			return Book.fromMap(bookMap);
+			return Book.fromHashMap(bookMap);
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Redis error while fetching book: " + e.getMessage(), e);
 			return null;
@@ -80,7 +82,7 @@ public class BookRepository {
 
 			for (String key : keys) {
 				Map<String, String> bookMap = jedis.hgetAll(key);
-				books.add(Book.fromMap(bookMap));
+				books.add(Book.fromHashMap(bookMap));
 			}
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Redis error while fetching all books: " + e.getMessage(), e);

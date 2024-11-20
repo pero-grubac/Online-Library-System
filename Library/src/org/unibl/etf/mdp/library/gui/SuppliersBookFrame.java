@@ -3,10 +3,13 @@ package org.unibl.etf.mdp.library.gui;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -72,10 +75,18 @@ public class SuppliersBookFrame extends GeneralFrame {
 		JLabel coverLabel = new JLabel();
 		ImageIcon coverImage = null;
 
-		if (book.getCoverImageFromBytes() != null) {
-			coverImage = new ImageIcon(book.getCoverImageFromBytes());
-			Image scaledImage = coverImage.getImage().getScaledInstance(120, 180, Image.SCALE_SMOOTH);
-			coverLabel.setIcon(new ImageIcon(scaledImage));
+		if (book.getCoverImageBytes() != null) {
+			BufferedImage bi = null;
+			try (ByteArrayInputStream bais = new ByteArrayInputStream(book.getCoverImageBytes())) {
+				bi = ImageIO.read(bais);
+			} catch (Exception e) {
+				System.err.println("Error while converting bytes to cover image: " + e.getMessage());
+			}
+			if (bi != null) {
+				coverImage = new ImageIcon(bi);
+				Image scaledImage = coverImage.getImage().getScaledInstance(100, 150, Image.SCALE_SMOOTH);
+				coverLabel.setIcon(new ImageIcon(scaledImage));
+			}
 		} else {
 			coverLabel.setText("No Image");
 		}
@@ -138,7 +149,7 @@ public class SuppliersBookFrame extends GeneralFrame {
 
 		StringBuilder cartContent = new StringBuilder();
 		for (int i = 0; i < cart.size(); i++) {
-			cartContent.append(i + 1).append(". ").append(cart.get(i).displayBook()).append("\n");
+			cartContent.append(i + 1).append(". ").append(cart.get(i).displayPrice()).append("\n");
 		}
 
 		cartTextArea.setText(cartContent.toString());

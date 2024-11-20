@@ -78,10 +78,11 @@ public class ServerThread extends Thread {
 
 						BookService.getInstance().notifyBookArrival(receivedBooks);
 
-						Message endMessage = new Message(END_MSG, serverName);
-						out.writeObject(endMessage);
-						out.flush();
-						//break;
+						/*
+						 * Message endMessage = new Message(END_MSG, serverName);
+						 * out.writeObject(endMessage); out.flush();
+						 */
+						// break;
 					} else if (INVOICE_MSG.equals(request.getType())) {
 						Invoice invoice = (Invoice) request.getBody();
 						InvoiceService.getInstance().notifyInvoiceReceived(invoice);

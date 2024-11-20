@@ -28,7 +28,7 @@ public class ServerThread extends Thread {
 
 	private static final String GET_DTO_MSG = conf.getDtoMsg();
 	private static final String END_MSG = conf.getEndMsg();
-	private static final String GET_MODE_MSG = conf.getModelMsg();
+	private static final String GET_MODEL_MSG = conf.getModelMsg();
 
 	private static final int PREVIEW_LINES = conf.getPreviewLines();
 	private static final String START_MARKER = conf.getStartMarker();
@@ -69,7 +69,7 @@ public class ServerThread extends Thread {
 					out.flush();
 					System.out.println("BookDTO " + bookdto + " Sent to  " + supplierName);
 
-				} else if (GET_MODE_MSG.equals(request.getType())) {
+				} else if (GET_MODEL_MSG.equals(request.getType())) {
 					String username = request.getUsername();
 					BookDto bookDto = (BookDto) request.getBody();
 

@@ -1,47 +1,38 @@
 package org.unibl.etf.mdp.model;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 
-import javax.imageio.ImageIO;
-
-import org.unibl.etf.mdp.supplierserver.properties.AppConfig;
 
 public class Book implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	private static final Random rand = new Random();
-	private static final AppConfig conf = new AppConfig();
 
 	private String title;
 	private String author;
 	private String language;
 	private Date releaseDate;
 	private String content;
-	private byte[] coverImageBytes;
-	private String imageUrl;
 	private int price;
+	private String coverImageBase64;
 
 	public Book() {
 		super();
 	}
 
-	public Book(String title, String author, String language, Date realeaseDate) {
+	public Book(String title, String author, String language, Date realeaseDate,int price) {
 		super();
 		this.title = title;
 		this.author = author;
 		this.language = language;
 		this.releaseDate = realeaseDate;
-		this.price = rand.nextInt(100) + 1;
+		this.price = price;
 	}
 
 	public String getTitle() {
@@ -76,14 +67,6 @@ public class Book implements Serializable {
 		this.releaseDate = releaseDate;
 	}
 
-	public byte[] getCoverImageBytes() {
-		return coverImageBytes;
-	}
-
-	public void setCoverImageBytes(BufferedImage coverImage) {
-		this.coverImageBytes = getCoverImageAsBytes(coverImage);
-	}
-
 	public String getContent() {
 		return content;
 	}
@@ -100,83 +83,64 @@ public class Book implements Serializable {
 		this.price = price;
 	}
 
-	public String getImageUrl() {
-		return imageUrl;
+	public String getCoverImageBase64() {
+		return coverImageBase64;
 	}
 
-	public void setImageUrl(String imageUrl) {
-		this.imageUrl = imageUrl;
+	public void setCoverImageBase64(String coverImageBase64) {
+		this.coverImageBase64 = coverImageBase64;
 	}
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(author, language, releaseDate, title);
+	public byte[] getCoverImageBytes() {
+		byte[] image = null;
+		if (coverImageBase64 != null && !coverImageBase64.isEmpty())
+			image = Base64.getDecoder().decode(coverImageBase64);
+		return image;
 	}
 
 	public Map<String, String> toHashMap() {
 		Map<String, String> map = new HashMap<>();
-		map.put("title", title);
-		map.put("author", author);
-		map.put("language", language);
-
-		if (releaseDate != null) {
-			SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
-			map.put("releaseDate", dateFormat.format(releaseDate));
-		}
-
+		map.put("title", title != null ? title : "");
+		map.put("author", author != null ? author : "");
+		map.put("language", language != null ? language : "");
+		map.put("releaseDate", releaseDate != null ? new SimpleDateFormat("yyyy-MM-dd").format(releaseDate) : "");
 		map.put("content", content != null ? content : "");
-
+		map.put("price", String.valueOf(price));
+		map.put("coverImageBytes", coverImageBase64 != null ? coverImageBase64 : "");
 		return map;
 	}
 
-	public static Book fromMap(Map<String, String> map) {
+	public static Book fromHashMap(Map<String, String> map) {
 		Book book = new Book();
 
-		book.setTitle(map.get("title"));
-		book.setAuthor(map.get("author"));
-		book.setLanguage(map.get("language"));
+		book.setTitle(map.getOrDefault("title", ""));
+		book.setAuthor(map.getOrDefault("author", ""));
+		book.setLanguage(map.getOrDefault("language", ""));
 
 		String releaseDateStr = map.get("releaseDate");
-		if (releaseDateStr != null) {
+		if (releaseDateStr != null && !releaseDateStr.isEmpty()) {
 			try {
-				SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 				book.setReleaseDate(dateFormat.parse(releaseDateStr));
 			} catch (ParseException e) {
 				e.printStackTrace();
 			}
 		}
 
-		book.setContent(map.get("content"));
+		book.setContent(map.getOrDefault("content", ""));
+		book.setPrice(Integer.parseInt(map.getOrDefault("price", "0")));
+
+		String coverImageBytesStr = map.get("coverImageBytes");
+		if (coverImageBytesStr != null && !coverImageBytesStr.isEmpty()) {
+			book.setCoverImageBase64(coverImageBytesStr);
+		}
+
 		return book;
 	}
 
-	public byte[] getCoverImageAsBytes(BufferedImage coverImage) {
-		if (coverImage == null) {
-			System.err.println("Cover image is null. Cannot convert to bytes.");
-			return null;
-		}
-		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-			ImageIO.write(coverImage, conf.getImageExt(), baos);
-			return baos.toByteArray();
-		} catch (Exception e) {
-			System.err.println("Error while converting cover image to bytes: " + e.getMessage());
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	public BufferedImage getCoverImageFromBytes() {
-		if (coverImageBytes == null) {
-			System.err.println("Cover image bytes are null. Cannot convert to BufferedImage.");
-			return null;
-		}
-		try (ByteArrayInputStream bais = new ByteArrayInputStream(coverImageBytes)) {
-			return ImageIO.read(bais);
-		} catch (Exception e) {
-			System.err.println("Error while converting bytes to cover image: " + e.getMessage());
-			e.printStackTrace();
-			return null;
-		}
+	@Override
+	public int hashCode() {
+		return Objects.hash(author, language, releaseDate, title);
 	}
 
 	@Override
@@ -200,8 +164,19 @@ public class Book implements Serializable {
 	}
 
 	public String getKey() {
+		String sanitizedAuthor = sanitize(author);
+		String sanitizedTitle = sanitize(title);
+		String sanitizedLanguage = sanitize(language);
+		String sanitizedDate = getFormatedDate().replaceAll("[^a-zA-Z0-9]", "");
 
-		return (author + ":" + title + ":" + language + ":" + getFormatedDate()).toLowerCase();
+		return (sanitizedAuthor + ":" + sanitizedTitle + ":" + sanitizedLanguage + ":" + sanitizedDate).toLowerCase();
+	}
+
+	private String sanitize(String input) {
+		if (input == null) {
+			return "";
+		}
+		return input.replaceAll("[^a-zA-Z0-9 ]", "").replaceAll(" +", "_").trim();
 	}
 
 	public String getFormatedDate() {

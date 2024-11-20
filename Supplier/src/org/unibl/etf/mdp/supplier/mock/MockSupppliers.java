@@ -92,7 +92,7 @@ public class MockSupppliers {
 		Path path = Paths.get(dir, supplierName, linkFile);
 
 		Collections.shuffle(bookUrls);
-		List<String> selectedUrls = bookUrls.subList(0, 20);
+		List<String> selectedUrls = bookUrls.subList(0, 5);
 
 		try {
 			Files.write(path, selectedUrls);

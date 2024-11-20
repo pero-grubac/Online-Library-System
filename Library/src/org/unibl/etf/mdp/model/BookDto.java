@@ -1,31 +1,20 @@
 package org.unibl.etf.mdp.model;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.Date;
 import java.util.Objects;
-import java.util.Random;
-
-import javax.imageio.ImageIO;
-
-import org.unibl.etf.mdp.library.properties.AppConfig;
 
 public class BookDto implements Serializable {
 	private static final long serialVersionUID = 1L;
-	private static final Random rand = new Random();
-	private static final AppConfig conf = new AppConfig();
-
 	private String title;
 	private String author;
 	private String language;
 	private Date releaseDate;
 	private String preview;
 	private int price;
-	private byte[] coverImageBytes;
-	private String imageUrl;
+	private String coverImageBase64;
 
 	public BookDto() {
 		super();
@@ -47,8 +36,7 @@ public class BookDto implements Serializable {
 		this.language = book.getLanguage();
 		this.releaseDate = book.getReleaseDate();
 		this.price = book.getPrice();
-		this.coverImageBytes = book.getCoverImageBytes();
-		this.imageUrl = book.getImageUrl();
+		this.coverImageBase64 = book.getCoverImageBase64();
 	}
 
 	public String getTitle() {
@@ -99,54 +87,24 @@ public class BookDto implements Serializable {
 		this.preview = preview;
 	}
 
+	public String getCoverImageBase64() {
+		return coverImageBase64;
+	}
+
+	public void setCoverImageBase64(String coverImageBase64) {
+		this.coverImageBase64 = coverImageBase64;
+	}
+
 	public byte[] getCoverImageBytes() {
-		return coverImageBytes;
-	}
-
-	public void setCoverImageBytes(BufferedImage coverImage) {
-		this.coverImageBytes = getCoverImageAsBytes(coverImage);
-	}
-
-	public String getImageUrl() {
-		return imageUrl;
-	}
-
-	public void setImageUrl(String imageUrl) {
-		this.imageUrl = imageUrl;
+		byte[] image = null;
+		if (coverImageBase64 != null && !coverImageBase64.isEmpty())
+			image = Base64.getDecoder().decode(coverImageBase64);
+		return image;
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(author, language, price, releaseDate, title);
-	}
-
-	public byte[] getCoverImageAsBytes(BufferedImage coverImage) {
-		if (coverImage == null) {
-			System.err.println("Cover image is null. Cannot convert to bytes.");
-			return null;
-		}
-		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-			ImageIO.write(coverImage, conf.getImageExt(), baos);
-			return baos.toByteArray();
-		} catch (Exception e) {
-			System.err.println("Error while converting cover image to bytes: " + e.getMessage());
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	public BufferedImage getCoverImageFromBytes() {
-		if (coverImageBytes == null) {
-			System.err.println("Cover image bytes are null. Cannot convert to BufferedImage.");
-			return null;
-		}
-		try (ByteArrayInputStream bais = new ByteArrayInputStream(coverImageBytes)) {
-			return ImageIO.read(bais);
-		} catch (Exception e) {
-			System.err.println("Error while converting bytes to cover image: " + e.getMessage());
-			e.printStackTrace();
-			return null;
-		}
 	}
 
 	@Override
@@ -169,17 +127,28 @@ public class BookDto implements Serializable {
 		return result.replaceAll("[:\\\\/*?|<>]", "-");
 	}
 
-	public String displayBook() {
-		return toString() + " ===> " + price;
+	public String getKey() {
+		String sanitizedAuthor = sanitize(author);
+		String sanitizedTitle = sanitize(title);
+		String sanitizedLanguage = sanitize(language);
+		String sanitizedDate = getFormatedDate().replaceAll("[^a-zA-Z0-9]", "");
+
+		return (sanitizedAuthor + ":" + sanitizedTitle + ":" + sanitizedLanguage + ":" + sanitizedDate).toLowerCase();
 	}
 
-	public String getKey() {
-
-		return (author + ":" + title + ":" + language + ":" + getFormatedDate()).toLowerCase();
+	private String sanitize(String input) {
+		if (input == null) {
+			return "";
+		}
+		return input.replaceAll("[^a-zA-Z0-9 ]", "").replaceAll(" +", "_").trim();
 	}
 
 	public String getFormatedDate() {
 		SimpleDateFormat displayFormat = new SimpleDateFormat("dd.MM.yyyy.");
 		return (releaseDate != null) ? displayFormat.format(releaseDate) : "N/A";
+	}
+
+	public Object displayPrice() {
+		return toString() + " ===> " + price;
 	}
 }
