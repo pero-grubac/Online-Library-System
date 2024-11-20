@@ -126,4 +126,12 @@ public class AppConfig {
 	public String getStatus() {
 		return getProperty("BOOKS_STATUS");
 	}
+
+	public int getPreviewLines() {
+		return getIntegerProperty("PREVIEW_LINES");
+	}
+
+	public String getStartMarker() {
+		return getProperty("START_MARKER");
+	}
 }

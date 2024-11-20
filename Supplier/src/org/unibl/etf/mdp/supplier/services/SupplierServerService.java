@@ -81,6 +81,7 @@ public class SupplierServerService {
 				out.flush();
 
 				Book book = (Book) in.readObject();
+				book.setCoverImageBase64(bookDto.getCoverImageBase64());
 				books.add(book);
 				System.out.println(book);
 			}

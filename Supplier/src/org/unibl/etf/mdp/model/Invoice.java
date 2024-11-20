@@ -76,7 +76,16 @@ public class Invoice implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Invoice [date=" + date + ", books=" + books + ", totalPrice=" + totalPrice + ", VAT=" + VAT + "]";
+		StringBuilder sb = new StringBuilder();
+		sb.append("Invoice:\n");
+		sb.append("Date: ").append(date).append("\n");
+		sb.append("Books:\n");
+		for (BookDto book : books) {
+			sb.append(" - ").append(book.toString()).append("\n"); 
+		}
+		sb.append("Total Price: ").append(totalPrice).append("\n");
+		sb.append("VAT: ").append(VAT).append("\n");
+		return sb.toString();
 	}
 
 }

@@ -5,9 +5,12 @@ import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -35,7 +38,7 @@ public class MainFrame extends GeneralFrame {
 		JButton requestsButton = new JButton("Requests");
 		topPanel.add(requestsButton);
 
-		add(topPanel, BorderLayout.NORTH); 
+		add(topPanel, BorderLayout.NORTH);
 
 		JPanel bookListPanel = new JPanel();
 		bookListPanel.setLayout(new BoxLayout(bookListPanel, BoxLayout.Y_AXIS));
@@ -68,10 +71,19 @@ public class MainFrame extends GeneralFrame {
 		JLabel coverLabel = new JLabel();
 		ImageIcon coverImage = null;
 
-		if (book.getCoverImageFromBytes() != null) {
-			coverImage = new ImageIcon(book.getCoverImageFromBytes());
-			Image scaledImage = coverImage.getImage().getScaledInstance(120, 180, Image.SCALE_SMOOTH); // Veća veličina
-			coverLabel.setIcon(new ImageIcon(scaledImage));
+		// Slika knjige
+		if (book.getCoverImageBytes() != null) {
+			BufferedImage bi = null;
+			try (ByteArrayInputStream bais = new ByteArrayInputStream(book.getCoverImageBytes())) {
+				bi = ImageIO.read(bais);
+			} catch (Exception e) {
+				System.err.println("Error while converting bytes to cover image: " + e.getMessage());
+			}
+			if (bi != null) {
+				coverImage = new ImageIcon(bi);
+				Image scaledImage = coverImage.getImage().getScaledInstance(100, 150, Image.SCALE_SMOOTH);
+				coverLabel.setIcon(new ImageIcon(scaledImage));
+			}
 		} else {
 			coverLabel.setText("No Image");
 		}
