@@ -47,8 +47,12 @@ public class AppConfig {
 		return getProperty("LOG_FILE");
 	}
 
-	public String getLibraryServerUrl() {
-		return getProperty("LIBRARY_URL");
+	public String getServerUserUrl() {
+		return getProperty("USERS_URL");
+	}
+
+	public String getServerBooksUrl() {
+		return getProperty("BOOKS_URL");
 	}
 
 }
