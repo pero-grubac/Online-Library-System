@@ -45,7 +45,8 @@ public class AccountingService implements IAccountingService {
 			if (Files.notExists(directoryPath)) {
 				Files.createDirectories(directoryPath);
 			}
-
+			// So the invoice is cleaner
+			invoice.getBooks().stream().forEach(b->b.setCoverImageBase64(null));
 			String jsonContent = gson.toJson(invoice);
 			Files.write(filePath, jsonContent.getBytes(), StandardOpenOption.CREATE);
 
