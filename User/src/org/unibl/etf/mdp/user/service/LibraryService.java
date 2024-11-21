@@ -15,7 +15,7 @@ import com.google.gson.GsonBuilder;
 
 public class LibraryService {
 	private static AppConfig conf = new AppConfig();
-	private static final String LIBRARY_URL = conf.getLibraryServerUrl();
+	private static final String USERS_URL = conf.getServerUserUrl();
 	private static final Logger logger = FileLogger.getLogger(LibraryService.class.getName());
 	private static LibraryService instance;
 
@@ -30,7 +30,7 @@ public class LibraryService {
 
 	public boolean login(String username, String password) {
 		try {
-			URL url = new URL(LIBRARY_URL + "login");
+			URL url = new URL(USERS_URL + "login");
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
 			conn.setRequestMethod("POST");
@@ -62,7 +62,7 @@ public class LibraryService {
 
 	public boolean register(User user) {
 		try {
-			URL url = new URL(LIBRARY_URL);
+			URL url = new URL(USERS_URL);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			conn.setRequestMethod("POST");
 			conn.setRequestProperty("Content-Type", "application/json");
