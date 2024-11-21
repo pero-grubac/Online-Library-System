@@ -2,6 +2,7 @@ package org.unibl.etf.mdp.libraryserver.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -127,5 +128,14 @@ public class UserService {
 
 	private int getNextId(List<User> users) {
 		return users.isEmpty() ? 1 : users.stream().mapToInt(User::getId).max().orElse(0) + 1;
+	}
+
+	public boolean login(String username, String password) {
+		Optional<User> user = repository.findByUsername(username);
+		if (user.isPresent() && user.get().getStatus().equals(StatusEnum.APPROVED)
+				&& user.get().getPassword().equals(password)) {
+			return true;
+		}
+		return false;
 	}
 }
