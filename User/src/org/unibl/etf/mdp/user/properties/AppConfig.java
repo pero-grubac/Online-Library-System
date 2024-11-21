@@ -38,4 +38,12 @@ public class AppConfig {
 	private Integer getIntegerProperty(String key) {
 		return Integer.parseInt(properties.getProperty(key));
 	}
+
+	public String getLogDir() {
+		return getProperty("LOG_DIR");
+	}
+
+	public String getLogFile() {
+		return getProperty("LOG_FILE");
+	}
 }
