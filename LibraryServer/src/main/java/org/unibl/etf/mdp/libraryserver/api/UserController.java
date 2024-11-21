@@ -90,4 +90,20 @@ public class UserController {
 		}
 	}
 
+	@POST
+	@Path("/login")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response loginUser(User user) {
+		try {
+			boolean loggedIn = service.login(user.getUsername(), user.getPassword());
+			if (loggedIn) {
+				return Response.ok("Login successful").build();
+			} else {
+				return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid username or password").build();
+			}
+		} catch (Exception e) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error during login").build();
+		}
+	}
 }

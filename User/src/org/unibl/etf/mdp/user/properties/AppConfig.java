@@ -46,4 +46,9 @@ public class AppConfig {
 	public String getLogFile() {
 		return getProperty("LOG_FILE");
 	}
+
+	public String getLibraryServerUrl() {
+		return getProperty("LIBRARY_URL");
+	}
+
 }
