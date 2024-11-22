@@ -68,11 +68,11 @@ public class AppConfig {
 	}
 
 	public String getDiscoverAllUsersMsg() {
-		return getProperty("DISCOVER_ALL");
+		return getProperty("DISCOVER_ALL_USERS");
 	}
 
 	public String getDiscoverUserMsg() {
-		return getProperty("DISCOVER_ALL_USERS");
+		return getProperty("DISCOVER_USER");
 	}
 
 }
