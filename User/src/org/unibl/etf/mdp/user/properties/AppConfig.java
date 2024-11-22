@@ -66,4 +66,36 @@ public class AppConfig {
 	public int getRequestBookPort() {
 		return getIntegerProperty("REQUEST_PORT");
 	}
+
+	public String getDiscoverAllUsersMsg() {
+		return getProperty("DISCOVER_ALL_USERS");
+	}
+
+	public String getDiscoverUserMsg() {
+		return getProperty("DISCOVER_USER");
+	}
+
+	public String getDefaultHost() {
+		return getProperty("HOST");
+	}
+
+	public int getDiscoveryServerTCPPort() {
+		return getIntegerProperty("DISCOVERY_SERVER_TCP_PORT");
+	}
+
+	public String getEndMsg() {
+		return getProperty("END_MSG");
+	}
+
+	public String getChatMsg() {
+		return getProperty("CHAT_MESSAGE");
+	}
+
+	public String getKeyStorePath() {
+		return getProperty("KEY_STORE_PATH");
+	}
+
+	public String getKeyStorePass() {
+		return getProperty("KEY_STORE_PASSWORD");
+	}
 }

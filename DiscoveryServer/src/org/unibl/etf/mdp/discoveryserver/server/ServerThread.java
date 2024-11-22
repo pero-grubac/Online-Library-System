@@ -56,12 +56,10 @@ public class ServerThread extends Thread {
 							logger.log(Level.SEVERE, "Error parsing port.", e);
 							break;
 						}
-						servers.put((String) request.getUsername(), (String) request.getBody());
-						System.out.println("Registered server: " + request.getUsername() + " on port: " + port);
+					    registerEntity(request.getUsername(), (String) request.getBody(), servers, "server");
 
-						Message response = new Message(OK_MSG);
-						out.writeObject(response);
-						out.flush();
+					    out.writeObject(new Message(OK_MSG));
+					    out.flush();
 					} else if (DISCOVER_ALL_SUPPLIERS_MSG.equals(request.getType())) {
 						Message response = new Message(DISCOVER_ALL_SUPPLIERS_MSG, "DiscoveryServer");
 						response.setBody(servers.toString());
@@ -76,11 +74,8 @@ public class ServerThread extends Thread {
 							logger.log(Level.SEVERE, "Error parsing port.", e);
 							break;
 						}
-						users.put((String) request.getUsername(), (String) request.getBody());
-						System.out.println("Registered user: " + request.getUsername() + " on port: " + port);
-						Message response = new Message(OK_MSG);
-						out.writeObject(response);
-						out.flush();
+						out.writeObject(new Message(OK_MSG));
+					    out.flush();
 					} else if (DISCOVER_ALL_USERS_MSG.equals(request.getType())) {
 						Message msg = new Message(DISCOVER_ALL_SUPPLIERS_MSG, "DiscoveryServer");
 						msg.setBody(users.toString());
@@ -105,6 +100,10 @@ public class ServerThread extends Thread {
 		} finally {
 			cleanup();
 		}
+	}
+	private void registerEntity(String username, String port, Map<String, String> entityMap, String entityType) {
+	    entityMap.put(username, port);
+	    System.out.println("Registered " + entityType + ": " + username + " on port: " + port);
 	}
 
 	private void cleanup() {

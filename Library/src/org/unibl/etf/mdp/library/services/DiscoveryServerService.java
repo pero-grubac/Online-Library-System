@@ -15,7 +15,7 @@ import org.unibl.etf.mdp.library.logger.FileLogger;
 
 public class DiscoveryServerService {
 	private static final AppConfig conf = new AppConfig();
-	private static final int SUPPLIER_SERVER_TCP_PORT = conf.getDiscoveryServerTCPPort();
+	private static final int DISCOVERY_SERVER_TCP_PORT = conf.getDiscoveryServerTCPPort();
 	private static final Logger logger = FileLogger.getLogger(DiscoveryServerService.class.getName());
 	private static final String HOST = conf.getDefaultHost();
 
@@ -26,7 +26,7 @@ public class DiscoveryServerService {
 		Message msg = new Message(disMsg);
 		try {
 			InetAddress addr = InetAddress.getByName(HOST);
-			Socket sock = new Socket(addr, SUPPLIER_SERVER_TCP_PORT);
+			Socket sock = new Socket(addr, DISCOVERY_SERVER_TCP_PORT);
 
 			ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
 			ObjectInputStream in = new ObjectInputStream(sock.getInputStream());
