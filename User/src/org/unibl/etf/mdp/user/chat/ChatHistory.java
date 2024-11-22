@@ -10,9 +10,12 @@ import org.unibl.etf.mdp.model.ChatMessage;
 public class ChatHistory {
 	private Map<String, List<ChatMessage>> conversations;
 	private static ChatHistory instance;
+	private List<ChatListener> listeners;
 
 	private ChatHistory() {
 		conversations = new HashMap<>();
+		listeners = new ArrayList<>();
+
 	}
 
 	public static synchronized ChatHistory getInstance() {
@@ -23,6 +26,7 @@ public class ChatHistory {
 
 	public void addMessage(String username, ChatMessage message) {
 		conversations.computeIfAbsent(username, k -> new ArrayList<>()).add(message);
+		notifyListeners(username);
 	}
 
 	public List<ChatMessage> getMessages(String username) {
@@ -31,5 +35,15 @@ public class ChatHistory {
 
 	public List<String> getActiveConversations() {
 		return new ArrayList<>(conversations.keySet());
+	}
+
+	public void addListener(ChatListener listener) {
+		listeners.add(listener);
+	}
+
+	private void notifyListeners(String username) {
+		for (ChatListener listener : listeners) {
+			listener.onNewMessage(username);
+		}
 	}
 }
