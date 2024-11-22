@@ -43,7 +43,7 @@ public class LoginFrame extends GeneralFrame {
 			if (loggedIn) {
 				JOptionPane.showMessageDialog(this, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
 				dispose();
-				new MainFrame().setVisible(true);
+				new MainFrame(username).setVisible(true);
 			} else {
 				JOptionPane.showMessageDialog(this, "Invalid username or password!", "Error",
 						JOptionPane.ERROR_MESSAGE);

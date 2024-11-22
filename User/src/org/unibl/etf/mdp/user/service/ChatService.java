@@ -9,6 +9,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -17,7 +18,9 @@ import java.util.logging.Logger;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.unibl.etf.mdp.model.ChatMessage;
 import org.unibl.etf.mdp.model.Message;
+import org.unibl.etf.mdp.user.chat.ChatHistory;
 import org.unibl.etf.mdp.user.logger.FileLogger;
 import org.unibl.etf.mdp.user.properties.AppConfig;
 
@@ -31,17 +34,18 @@ public class ChatService {
 	private static final String DISCOVER_ALL_USERS_MSG = conf.getDiscoverAllUsersMsg();
 	private static final String CHAT_MSG = conf.getChatMsg();
 	private static final String END_MSG = conf.getEndMsg();
-
-	private static final String KEY_STORE_PATH = conf.getKeyStorePath();
-	private static final String KEY_STORE_PASSWORD = conf.getKeyStorePass();
+	private static final String OK_MSG = conf.getOk();
 
 	private String username;
 	private int port;
 	private static ChatService instance;
+	private static ChatHistory chatHistory;
 
 	private ChatService(String username, int port) {
 		this.username = username;
 		this.port = port;
+		System.out.println(username + " " + port);
+		chatHistory = ChatHistory.getInstance();
 	}
 
 	public static synchronized ChatService getInstance(String username, int port) {
@@ -89,8 +93,14 @@ public class ChatService {
 
 	public void register() {
 		try (Socket socket = new Socket(HOST, DISCOVERY_SERVER_TCP_PORT);
-				ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream())) {
-			output.writeObject(new Message(DISCOVER_USER_MSG, username, port));
+				ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+				ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
+			out.writeObject(new Message(DISCOVER_USER_MSG, username, String.valueOf(port)));
+			Message response = (Message) in.readObject();
+			if (OK_MSG.equals(response.getType())) {
+				out.writeObject(new Message(END_MSG));
+				out.flush();
+			}
 		} catch (Exception ex) {
 			logger.log(Level.SEVERE, "An error occurred during registration", ex);
 		}
@@ -98,21 +108,23 @@ public class ChatService {
 	}
 
 	public void sendMessage(String recipientIp, int recipientPort, String messageBody) {
-	    try {
-	        SSLSocketFactory sf = (SSLSocketFactory) SSLSocketFactory.getDefault();
-	        SSLSocket socket = (SSLSocket) sf.createSocket(HOST, recipientPort);
+		try (SSLSocket socket = (SSLSocket) SSLSocketFactory.getDefault().createSocket(HOST, recipientPort);
+				ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+				ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
 
-	        ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+			Message message = new Message(CHAT_MSG, username, messageBody);
+			out.writeObject(message);
+			out.flush();
 
-	        Message message = new Message(CHAT_MSG, username, messageBody);
-	        out.writeObject(message);
-	        out.flush();
+			Message response = (Message) in.readObject();
+			if (OK_MSG.equals(response.getType())) {
+				ChatMessage cm = new ChatMessage(username, messageBody, LocalDateTime.now());
+				chatHistory.addMessage(recipientIp, cm);
+			}
 
-	        out.close();
-	        socket.close();
-	    } catch (Exception ex) {
-	        logger.log(Level.SEVERE, "An error occurred while sending a message", ex);
-	    }
+		} catch (Exception ex) {
+			logger.log(Level.SEVERE, "An error occurred while sending a message", ex);
+		}
 	}
 
 }

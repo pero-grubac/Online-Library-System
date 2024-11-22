@@ -1,6 +1,7 @@
 package org.unibl.etf.mdp.user.gui;
 
 import org.unibl.etf.mdp.model.BookDto;
+import org.unibl.etf.mdp.user.chat.ChatServer;
 import org.unibl.etf.mdp.user.service.BookService;
 
 import javax.imageio.ImageIO;
@@ -20,11 +21,13 @@ public class MainFrame extends GeneralFrame {
 	private DefaultTableModel tableModel;
 	private JTable bookTable;
 	private JTextField searchField;
+	private Data data;
 
-	public MainFrame() {
+	public MainFrame(String username) {
+
 		super("Library");
 		setSize(800, 600);
-
+		data = Data.getInstance(username);
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BorderLayout());
 
@@ -32,10 +35,11 @@ public class MainFrame extends GeneralFrame {
 		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		JButton btn1 = new JButton("Btn1");
 		JButton btn2 = new JButton("Btn2");
-		JButton btn3 = new JButton("Btn3");
+		JButton btn3 = new JButton("Chat");
+		btn3.addActionListener(e -> new ChatForm(data.getUsername()).setVisible(true));
+		buttonPanel.add(btn3);
 		buttonPanel.add(btn1);
 		buttonPanel.add(btn2);
-		buttonPanel.add(btn3);
 
 		// Search field
 		searchField = new JTextField(30);

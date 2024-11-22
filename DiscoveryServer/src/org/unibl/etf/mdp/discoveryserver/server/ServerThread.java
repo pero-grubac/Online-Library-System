@@ -13,6 +13,8 @@ import org.unibl.etf.mdp.discoveryserver.logger.FileLogger;
 import org.unibl.etf.mdp.discoveryserver.properties.AppConfig;
 import org.unibl.etf.mdp.model.Message;
 
+import jdk.internal.org.jline.terminal.TerminalBuilder.SystemOutput;
+
 public class ServerThread extends Thread {
 	public static final AppConfig conf = new AppConfig();
 	private static final Logger logger = FileLogger.getLogger(ServerThread.class.getName());
@@ -48,34 +50,45 @@ public class ServerThread extends Thread {
 				try {
 					request = (Message) in.readObject();
 					if (DISCOVER_SUPPLIER_MSG.equals(request.getType())) {
-						int port;
+						Integer port;
 						try {
-							String temp = (String) request.getBody();
-							port = Integer.parseInt(temp);
+							Object body = request.getBody();
+							if (body instanceof String) {
+								port = Integer.parseInt((String) body);
+							} else if (body instanceof Integer) {
+								port = (Integer) body;
+							}
 						} catch (Exception e) {
 							logger.log(Level.SEVERE, "Error parsing port.", e);
 							break;
 						}
-					    registerEntity(request.getUsername(), (String) request.getBody(), servers, "server");
+						registerEntity(request.getUsername(), (String) request.getBody(), servers, "server");
 
-					    out.writeObject(new Message(OK_MSG));
-					    out.flush();
+						out.writeObject(new Message(OK_MSG));
+						out.flush();
 					} else if (DISCOVER_ALL_SUPPLIERS_MSG.equals(request.getType())) {
 						Message response = new Message(DISCOVER_ALL_SUPPLIERS_MSG, "DiscoveryServer");
 						response.setBody(servers.toString());
 						out.writeObject(response);
 						out.flush();
 					} else if (DISCOVER_USER_MSG.equals(request.getType())) {
-						int port;
+						Integer port = 0;
 						try {
-							String temp = (String) request.getBody();
-							port = Integer.parseInt(temp);
+							Object body = request.getBody();
+							if (body instanceof String) {
+								port = Integer.parseInt((String) body);
+							} else if (body instanceof Integer) {
+								port = (Integer) body;
+							}
 						} catch (Exception e) {
 							logger.log(Level.SEVERE, "Error parsing port.", e);
 							break;
 						}
+						registerEntity(request.getUsername(), port.toString(), users, "user");
+
 						out.writeObject(new Message(OK_MSG));
-					    out.flush();
+						out.flush();
+						
 					} else if (DISCOVER_ALL_USERS_MSG.equals(request.getType())) {
 						Message msg = new Message(DISCOVER_ALL_SUPPLIERS_MSG, "DiscoveryServer");
 						msg.setBody(users.toString());
@@ -101,9 +114,10 @@ public class ServerThread extends Thread {
 			cleanup();
 		}
 	}
+
 	private void registerEntity(String username, String port, Map<String, String> entityMap, String entityType) {
-	    entityMap.put(username, port);
-	    System.out.println("Registered " + entityType + ": " + username + " on port: " + port);
+		entityMap.put(username, port);
+		System.out.println("Registered " + entityType + ": " + username + " on port: " + port);
 	}
 
 	private void cleanup() {

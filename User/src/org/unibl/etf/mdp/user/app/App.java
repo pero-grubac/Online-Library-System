@@ -11,6 +11,8 @@ public class App {
 	public static void main(String[] args) {
 		System.setProperty("javax.net.ssl.trustStore", KEY_STORE_PATH);
 		System.setProperty("javax.net.ssl.trustStorePassword", KEY_STORE_PASSWORD);
+		System.setProperty("javax.net.ssl.keyStore", KEY_STORE_PATH);
+		System.setProperty("javax.net.ssl.keyStorePassword", KEY_STORE_PASSWORD);
 		new LoginFrame().setVisible(true);
 
 	}
