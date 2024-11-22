@@ -98,4 +98,8 @@ public class AppConfig {
 	public String getKeyStorePass() {
 		return getProperty("KEY_STORE_PASSWORD");
 	}
+
+	public String getOk() {
+		return getProperty("OK");
+	}
 }
