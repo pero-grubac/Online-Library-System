@@ -9,6 +9,7 @@ public class Message implements Serializable {
 	private String type;
 	private String username;
 	private Object body;
+	private String entityType;
 
 	public Message(String type) {
 		super();
@@ -26,6 +27,22 @@ public class Message implements Serializable {
 		this.type = type;
 		this.username = username;
 		this.body = body;
+	}
+
+	public Message(String type, String username, Object body, String entityType) {
+		super();
+		this.type = type;
+		this.username = username;
+		this.body = body;
+		this.entityType = entityType;
+	}
+
+	public String getEntityType() {
+		return entityType;
+	}
+
+	public void setEntityType(String entityType) {
+		this.entityType = entityType;
 	}
 
 	public String getType() {

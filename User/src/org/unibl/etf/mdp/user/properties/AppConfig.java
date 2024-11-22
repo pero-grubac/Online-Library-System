@@ -55,4 +55,15 @@ public class AppConfig {
 		return getProperty("BOOKS_URL");
 	}
 
+	public String getMulticastAdd() {
+		return getProperty("MULTICAST_ADD");
+	}
+
+	public int getChatUsersPort() {
+		return getIntegerProperty("USERS_PORT");
+	}
+
+	public int getRequestBookPort() {
+		return getIntegerProperty("REQUEST_PORT");
+	}
 }

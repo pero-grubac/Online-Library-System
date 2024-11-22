@@ -16,16 +16,19 @@ import org.unibl.etf.mdp.model.Message;
 public class ServerThread extends Thread {
 	public static final AppConfig conf = new AppConfig();
 	private static final Logger logger = FileLogger.getLogger(ServerThread.class.getName());
-	private static final String discoverMsg = conf.getDiscoveryMsg();
-	private static final String endMsg = conf.getEndMsg();
-	private static final String okMsg = conf.getOkMsg();
-	private static final String discoverAllMsg = conf.getDiscoverAllMsg();
+	private static final String DISCOVER_SUPPLIER_MSG = conf.getDiscoveryMsg();
+	private static final String END_MSG = conf.getEndMsg();
+	private static final String OK_MSG = conf.getOkMsg();
+	private static final String DISCOVER_ALL_SUPPLIERS_MSG = conf.getDiscoverAllMsg();
+	private static final String DISCOVER_USER_MSG = conf.getDiscoverUserMsg();
+	private static final String DISCOVER_ALL_USERS_MSG = conf.getDiscoverAllUsersMsg();
 
 	private Socket sock;
 	private ObjectInputStream in;
 	private ObjectOutputStream out;
 
 	private static Map<String, String> servers = new HashMap<>();
+	private static Map<String, String> users = new HashMap<>();
 
 	public ServerThread(Socket sock) {
 		this.sock = sock;
@@ -44,7 +47,7 @@ public class ServerThread extends Thread {
 			while (true) {
 				try {
 					request = (Message) in.readObject();
-					if (discoverMsg.equals(request.getType())) {
+					if (DISCOVER_SUPPLIER_MSG.equals(request.getType())) {
 						int port;
 						try {
 							String temp = (String) request.getBody();
@@ -56,15 +59,34 @@ public class ServerThread extends Thread {
 						servers.put((String) request.getUsername(), (String) request.getBody());
 						System.out.println("Registered server: " + request.getUsername() + " on port: " + port);
 
-						Message response = new Message(okMsg);
+						Message response = new Message(OK_MSG);
 						out.writeObject(response);
 						out.flush();
-					} else if (discoverAllMsg.equals(request.getType())) {
-						Message response = new Message(discoverAllMsg, "DiscoveryServer");
+					} else if (DISCOVER_ALL_SUPPLIERS_MSG.equals(request.getType())) {
+						Message response = new Message(DISCOVER_ALL_SUPPLIERS_MSG, "DiscoveryServer");
 						response.setBody(servers.toString());
 						out.writeObject(response);
 						out.flush();
-					} else if (endMsg.equals(request.getType())) {
+					} else if (DISCOVER_USER_MSG.equals(request.getType())) {
+						int port;
+						try {
+							String temp = (String) request.getBody();
+							port = Integer.parseInt(temp);
+						} catch (Exception e) {
+							logger.log(Level.SEVERE, "Error parsing port.", e);
+							break;
+						}
+						users.put((String) request.getUsername(), (String) request.getBody());
+						System.out.println("Registered user: " + request.getUsername() + " on port: " + port);
+						Message response = new Message(OK_MSG);
+						out.writeObject(response);
+						out.flush();
+					} else if (DISCOVER_ALL_USERS_MSG.equals(request.getType())) {
+						Message msg = new Message(DISCOVER_ALL_SUPPLIERS_MSG, "DiscoveryServer");
+						msg.setBody(users.toString());
+						out.writeObject(msg);
+						out.flush();
+					} else if (END_MSG.equals(request.getType())) {
 						System.out.println("Ending connection for: " + request.getUsername());
 						break;
 					} else {
