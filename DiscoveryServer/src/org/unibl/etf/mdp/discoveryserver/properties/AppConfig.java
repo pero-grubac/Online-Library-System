@@ -67,4 +67,12 @@ public class AppConfig {
 		return getProperty("DISCOVER_ALL");
 	}
 
+	public String getDiscoverAllUsersMsg() {
+		return getProperty("DISCOVER_ALL");
+	}
+
+	public String getDiscoverUserMsg() {
+		return getProperty("DISCOVER_ALL_USERS");
+	}
+
 }
