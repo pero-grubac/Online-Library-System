@@ -9,6 +9,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -17,20 +18,32 @@ import javax.ws.rs.core.Response;
 
 import org.unibl.etf.mdp.libraryserver.logger.FileLogger;
 import org.unibl.etf.mdp.libraryserver.service.BookService;
+import org.unibl.etf.mdp.libraryserver.service.EmailService;
+import org.unibl.etf.mdp.libraryserver.service.UserService;
+import org.unibl.etf.mdp.libraryserver.service.ZipService;
 import org.unibl.etf.mdp.model.Book;
 import org.unibl.etf.mdp.model.BookDto;
+import org.unibl.etf.mdp.model.UserDto;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
 @Path("/books")
 public class BookController {
 	private static final Logger logger = FileLogger.getLogger(BookController.class.getName());
 
 	private final BookService service;
+	private final ZipService zipService;
+	private final EmailService emailService;
+	private final UserService userService;
 
 	public BookController() {
 		service = new BookService();
+		zipService = new ZipService();
+		emailService = new EmailService();
+		userService = new UserService();
 	}
 
 	@GET
@@ -109,6 +122,49 @@ public class BookController {
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Error while deleting book: " + e.getMessage(), e);
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error deleting book").build();
+		}
+	}
+
+	@PUT
+	@Path("/email/{username}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response sendEmail(@PathParam("username") String username, String booksJson) {
+		Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd").create();
+		Type listType = new TypeToken<List<BookDto>>() {
+		}.getType();
+		List<BookDto> books;
+
+		try {
+			// Parsiranje liste knjiga
+			books = gson.fromJson(booksJson, listType);
+			if (books == null || books.isEmpty()) {
+				return Response.status(Response.Status.BAD_REQUEST).entity("Book list cannot be empty.").build();
+			}
+		} catch (JsonSyntaxException e) {
+			logger.log(Level.SEVERE, "Invalid JSON format: " + e.getMessage(), e);
+			return Response.status(Response.Status.BAD_REQUEST).entity("Invalid JSON format.").build();
+		}
+
+		// Dohvatanje korisnika
+		UserDto user = userService.getByUsername(username);
+		if (user == null) {
+			return Response.status(Response.Status.NOT_FOUND).entity("User not found.").build();
+		}
+
+		try {
+			// Kreiranje ZIP fajla i slanje email-a
+			String pathToZip = zipService.zipBooks(books);
+			if (pathToZip == null) {
+				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Failed to create ZIP file.")
+						.build();
+			}
+
+			emailService.sendEmail(pathToZip, user.getEmail(), books);
+			return Response.ok("Email sent successfully.").build();
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "An error occurred while sending the email: " + e.getMessage(), e);
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.entity("An error occurred while sending the email: " + e.getMessage()).build();
 		}
 	}
 

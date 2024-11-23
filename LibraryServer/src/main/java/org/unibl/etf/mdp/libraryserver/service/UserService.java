@@ -138,4 +138,11 @@ public class UserService {
 		}
 		return false;
 	}
+
+	public UserDto getByUsername(String username) {
+		Optional<User> user = repository.findByUsername(username);
+		if (user.isPresent())
+			return new UserDto(user.get());
+		return null;
+	}
 }
