@@ -1,5 +1,6 @@
 package org.unibl.etf.mdp.libraryserver.service;
 
+import java.util.List;
 import java.util.Properties;
 import javax.mail.*;
 import javax.mail.internet.*;
@@ -9,6 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.unibl.etf.mdp.libraryserver.logger.FileLogger;
 import org.unibl.etf.mdp.libraryserver.properties.AppConfig;
+import org.unibl.etf.mdp.model.BookDto;
 
 public class EmailService {
 	private static final AppConfig conf = new AppConfig();
@@ -18,7 +20,7 @@ public class EmailService {
     private static final String USERNAME = conf.getMailUser();
     private static final String PASSWORD = conf.getMailPass();
 
-    public void sendEmail(String zipFilePath, String to) {
+    public void sendEmail(String zipFilePath, String to,List<BookDto> books) {
         Properties props = new Properties();
         props.put("mail.smtp.host", HOST);
         props.put("mail.smtp.port", PORT);

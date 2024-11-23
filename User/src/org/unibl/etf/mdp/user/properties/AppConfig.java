@@ -63,10 +63,6 @@ public class AppConfig {
 		return getIntegerProperty("USERS_PORT");
 	}
 
-	public int getRequestBookPort() {
-		return getIntegerProperty("REQUEST_PORT");
-	}
-
 	public String getDiscoverAllUsersMsg() {
 		return getProperty("DISCOVER_ALL_USERS");
 	}
@@ -101,5 +97,9 @@ public class AppConfig {
 
 	public String getOk() {
 		return getProperty("OK");
+	}
+
+	public String getGroupMessage() {
+		return getProperty("GROUP_MESSAGE");
 	}
 }

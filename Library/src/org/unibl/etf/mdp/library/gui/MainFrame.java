@@ -5,12 +5,13 @@ import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.BoxLayout;
 
 import org.unibl.etf.mdp.library.services.BookService;
 import org.unibl.etf.mdp.model.BookDto;
@@ -19,6 +20,7 @@ public class MainFrame extends GeneralFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel bookListPanel;
+	private static final Map<String, JFrame> openForms = new HashMap<>();
 
 	public MainFrame() {
 		super("Library");
@@ -38,6 +40,12 @@ public class MainFrame extends GeneralFrame {
 		JButton manageUsersButton = new JButton("Manage Users");
 		manageUsersButton.addActionListener(e -> new UserFrame().setVisible(true));
 		topPanel.add(manageUsersButton);
+
+		JButton btn2 = new JButton("Group chat");
+		btn2.addActionListener(
+				e -> openForm("GroupChatForm", () -> new GroupChatForm(Data.getUsername())));
+
+		topPanel.add(btn2);
 
 		add(topPanel, BorderLayout.NORTH);
 
@@ -139,6 +147,22 @@ public class MainFrame extends GeneralFrame {
 				JOptionPane.showMessageDialog(this, "Failed to delete the book.", "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		}
+	}
+
+	private void openForm(String formKey, FormCreator creator) {
+		JFrame existingForm = openForms.get(formKey);
+		if (existingForm == null || !existingForm.isVisible()) {
+			JFrame newForm = creator.create();
+			openForms.put(formKey, newForm);
+			newForm.setVisible(true);
+		} else {
+			existingForm.toFront();
+		}
+	}
+
+	@FunctionalInterface
+	interface FormCreator {
+		JFrame create();
 	}
 
 }

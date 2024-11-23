@@ -11,7 +11,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class MainFrame extends GeneralFrame {
@@ -22,10 +24,11 @@ public class MainFrame extends GeneralFrame {
 	private JTable bookTable;
 	private JTextField searchField;
 	private Data data;
+	private static final Map<String, JFrame> openForms = new HashMap<>();
 
 	public MainFrame(String username) {
 
-		super("Library");
+		super("Library - " + username);
 		setSize(800, 600);
 		data = Data.getInstance(username);
 		JPanel mainPanel = new JPanel();
@@ -34,9 +37,11 @@ public class MainFrame extends GeneralFrame {
 		// Top buttons
 		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		JButton btn1 = new JButton("Btn1");
-		JButton btn2 = new JButton("Btn2");
+		JButton btn2 = new JButton("Group chat");
 		JButton btn3 = new JButton("Chat");
-		btn3.addActionListener(e -> new ChatForm(data.getUsername()).setVisible(true));
+		btn3.addActionListener(e -> openForm("ChatForm", () -> new ChatForm(data.getUsername())));
+		btn2.addActionListener(e -> openForm("GroupChatForm", () -> new GroupChatForm(data.getUsername())));
+
 		buttonPanel.add(btn3);
 		buttonPanel.add(btn1);
 		buttonPanel.add(btn2);
@@ -68,6 +73,17 @@ public class MainFrame extends GeneralFrame {
 
 		add(mainPanel);
 		loadBooks();
+	}
+
+	private void openForm(String formKey, FormCreator creator) {
+		JFrame existingForm = openForms.get(formKey);
+		if (existingForm == null || !existingForm.isVisible()) {
+			JFrame newForm = creator.create();
+			openForms.put(formKey, newForm);
+			newForm.setVisible(true);
+		} else {
+			existingForm.toFront();
+		}
 	}
 
 	private void loadBooks() {
@@ -189,6 +205,11 @@ public class MainFrame extends GeneralFrame {
 			JOptionPane.showMessageDialog(MainFrame.this, detailsPanel, "Book Details",
 					JOptionPane.INFORMATION_MESSAGE);
 		}
+	}
+
+	@FunctionalInterface
+	interface FormCreator {
+		JFrame create();
 	}
 
 }
