@@ -3,6 +3,8 @@ package org.unibl.etf.mdp.user.service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -50,4 +52,47 @@ public class BookService {
 		}
 		return books;
 	}
+
+	public void sendBooksToEmail(List<BookDto> selectedBooks, String username) {
+	    HttpURLConnection conn = null;
+
+	    try {
+	        // Konverzija knjiga u JSON
+	    	Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd").create();
+	        String booksJson = gson.toJson(selectedBooks);
+
+	        // Podešavanje konekcije
+	        URL url = new URL(BOOKS_URL + "email/" + username);
+	        conn = (HttpURLConnection) url.openConnection();
+	        conn.setRequestMethod("PUT"); // Endpoint koristi PUT metod
+	        conn.setRequestProperty("Content-Type", "application/json");
+	        conn.setDoOutput(true);
+
+	        // Slanje JSON podataka
+	        try (OutputStream os = conn.getOutputStream()) {
+	            os.write(booksJson.getBytes(StandardCharsets.UTF_8));
+	        }
+
+	        // Provera odgovora
+	        int responseCode = conn.getResponseCode();
+	        if (responseCode == HttpURLConnection.HTTP_OK) {
+	            logger.info("Books sent to email successfully.");
+	        } else if (responseCode == HttpURLConnection.HTTP_BAD_REQUEST) {
+	            logger.warning("Invalid request. Check book data or username.");
+	        } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+	            logger.warning("User not found: " + username);
+	        } else {
+	            logger.warning("Unexpected response code: " + responseCode);
+	        }
+
+	    } catch (IOException e) {
+	        logger.log(Level.SEVERE, "Error while sending books to email.", e);
+	    } finally {
+	        if (conn != null) {
+	            conn.disconnect(); // Zatvaranje konekcije
+	        }
+	    }
+	}
+
+
 }

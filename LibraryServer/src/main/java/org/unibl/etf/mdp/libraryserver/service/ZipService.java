@@ -20,14 +20,14 @@ public class ZipService {
 	private static final AppConfig conf = new AppConfig();
 	private static final String BOOK_EXT = conf.getBookExt();
 	private static final String ZIP_FOLDER = conf.getZipFolder();
-
+	private static final String ZIP_FILE = conf.getZipFile();
 	private final BookService bookService;
 
 	public ZipService() {
 		this.bookService = new BookService();
 	}
 
-	public String zipBooks(List<BookDto> bookDtos, String zipFileName) {
+	public String zipBooks(List<BookDto> bookDtos) {
 		if (bookDtos == null || bookDtos.isEmpty()) {
 			logger.log(Level.WARNING, "BookDto list is empty or null.");
 			return null;
@@ -40,7 +40,7 @@ public class ZipService {
 				logger.info("Created ZIP folder: " + zipFolderPath.toAbsolutePath());
 			}
 
-			Path zipFilePath = zipFolderPath.resolve(zipFileName);
+			Path zipFilePath = zipFolderPath.resolve(ZIP_FILE);
 
 			try (ZipOutputStream zipOut = new ZipOutputStream(Files.newOutputStream(zipFilePath))) {
 				for (BookDto bookDto : bookDtos) {
@@ -71,4 +71,23 @@ public class ZipService {
 			return null;
 		}
 	}
+
+	public void clearZipFolder() {
+		try {
+			Path zipFolderPath = Paths.get(ZIP_FOLDER);
+			if (Files.exists(zipFolderPath)) {
+				Files.walk(zipFolderPath).filter(Files::isRegularFile).forEach(file -> {
+					try {
+						Files.delete(file);
+					} catch (IOException e) {
+						logger.log(Level.WARNING, "Failed to delete file: " + file.toAbsolutePath(), e);
+					}
+				});
+				logger.info("Cleared ZIP folder: " + zipFolderPath.toAbsolutePath());
+			}
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, "Error while clearing ZIP folder: " + e.getMessage(), e);
+		}
+	}
+
 }
