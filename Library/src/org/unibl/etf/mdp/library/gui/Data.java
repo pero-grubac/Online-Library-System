@@ -3,6 +3,7 @@ package org.unibl.etf.mdp.library.gui;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
+import org.unibl.etf.mdp.library.groupchat.GroupChatServer;
 import org.unibl.etf.mdp.library.mq.DirectSender;
 import org.unibl.etf.mdp.library.observer.BookObserver;
 import org.unibl.etf.mdp.library.observer.InvoiceObserver;
@@ -20,6 +21,8 @@ public class Data {
 	private static DirectSender sender;
 	private Server server;
 	private Thread serverThread;
+	private GroupChatServer groupChatServer;
+	private static final String username = "Library";
 	private static Data instance = null;
 
 	private Data() {
@@ -27,6 +30,13 @@ public class Data {
 		invoiceService.addObserver(invoiceObserver);
 		initServer();
 		initMQ();
+		initGroupChatServer();
+	}
+
+	private void initGroupChatServer() {
+		groupChatServer = new GroupChatServer();
+		groupChatServer.start();
+
 	}
 
 	private void initServer() {
@@ -34,6 +44,10 @@ public class Data {
 		serverThread = new Thread(server);
 		serverThread.start();
 
+	}
+
+	public static String getUsername() {
+		return username;
 	}
 
 	private void initMQ() {

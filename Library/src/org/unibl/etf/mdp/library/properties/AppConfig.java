@@ -134,4 +134,21 @@ public class AppConfig {
 	public String getStartMarker() {
 		return getProperty("START_MARKER");
 	}
+
+	public String getGroupMessage() {
+		return getProperty("GROUP_MESSAGE");
+	}
+
+	public String getChatMsg() {
+		return getProperty("CHAT_MESSAGE");
+	}
+
+	public String getMulticastAdd() {
+		return getProperty("MULTICAST_ADD");
+	}
+
+	public int getChatUsersPort() {
+		return getIntegerProperty("USERS_PORT");
+	}
+
 }
