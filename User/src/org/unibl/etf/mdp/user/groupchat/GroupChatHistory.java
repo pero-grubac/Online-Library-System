@@ -31,12 +31,14 @@ public class GroupChatHistory {
 	}
 
 	public void addMessage(ChatMessage message) {
-		messages.add(message);
-		notifyListeners();
+		if (!messages.contains(message)) {
+			messages.add(message);
+			notifyListeners();
+		}
 	}
 
 	public List<ChatMessage> getMessages() {
 		return messages;
 	}
-	
+
 }
