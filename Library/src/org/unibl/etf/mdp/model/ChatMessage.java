@@ -1,6 +1,7 @@
 package org.unibl.etf.mdp.model;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 public class ChatMessage {
 	private String username; // Ko šalje poruku
@@ -36,6 +37,24 @@ public class ChatMessage {
 
 	public void setTimestamp(LocalDateTime timestamp) {
 		this.timestamp = timestamp;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(message, timestamp, username);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ChatMessage other = (ChatMessage) obj;
+		return Objects.equals(message, other.message) && Objects.equals(timestamp, other.timestamp)
+				&& Objects.equals(username, other.username);
 	}
 
 	@Override
