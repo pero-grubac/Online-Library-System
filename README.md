@@ -61,9 +61,5 @@
         <li>Scalability to handle larger databases and user loads.</li>
         <li>Improved UI/UX for all applications.</li>
     </ul>
-    <h2>💻 Contributions</h2>
-    <p>
-        Contributions are welcome! Please feel free to open an issue or submit a pull request for any improvements or new features.
-    </p>
 </body>
 </html>
