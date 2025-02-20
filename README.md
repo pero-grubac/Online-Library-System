@@ -7,7 +7,7 @@
         to handle library operations, member management, book inventory, and supplier integration. 
         Below is an overview of the key features and functionalities.
     </p>
-    <h2>✨ Key Features</h2>
+    <h2>✨ Key Features </h2>
     <ul>
         <li><strong>Library Application:</strong> GUI application for library staff to manage members, books, and reservations.</li>
         <li><strong>Member Application:</strong> GUI application for members to browse, reserve, and download books.</li>
