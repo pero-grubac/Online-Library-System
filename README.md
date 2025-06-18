@@ -1,52 +1,70 @@
-# 📚 Online Library System
+<h1 align="center">📚 Online Library System</h1>
 
-This project simulates the operation of an online library. It includes multiple applications and components  
-to handle library operations, member management, book inventory, and supplier integration.  
-Below is an overview of the key features and functionalities.
+<p align="center">
+  <b>A multi-component Java system that simulates an online library platform with real-time communication and integration.</b>
+</p>
 
-## ✨ Key Features  
-- **Library Application:** GUI application for library staff to manage members, books, and reservations.  
-- **Member Application:** GUI application for members to browse, reserve, and download books.  
-- **Supplier Application:** GUI application for book suppliers to manage book inventory and handle orders.  
+<p align="center">
+  <img src="https://img.shields.io/badge/Java-Used-red?logo=java&logoColor=white" />
+  <img src="https://img.shields.io/badge/WebSockets-Enabled-blue?logo=websocket" />
+  <img src="https://img.shields.io/badge/REST%20API-Available-brightgreen?logo=apachespark" />
+  <img src="https://img.shields.io/badge/RabbitMQ-Used-orange?logo=rabbitmq" />
+  <img src="https://img.shields.io/badge/RMI-Supported-yellow?logo=protocols" />
+</p>
 
-## 📋 Library Application  
-- Manage members: Add, view, update, delete, approve, or reject member registration requests.  
-- Book inventory: CRUD operations for books stored in a Redis database.  
-- Handle book reservations: Approve or reject member book reservation requests.  
-- Order books from suppliers using socket communication.  
-- Support for test data generation during application startup.  
 
-## 👤 Member Application  
-- **Registration:** Members can register with personal details (e.g., name, address, email) via RESTful endpoints.  
-- **Login:** Authenticate using a username and password.  
-- **Book browsing:** View all books in a table format, with search and filtering options.  
-- **Book details:** Open a popup to see the title, cover, and first 100 lines of book content.  
-- **Download books:** Select books to download as a ZIP archive sent to the member's email.  
-- **Chat:** Members can exchange opinions about books via a secure socket-based chat application.  
-- **Multicast messaging:** Suggest new books for purchase, visible to other members and librarians.  
+<hr>
 
-## 📦 Supplier Application  
-- **Manage inventory:** Add and view books offered to the library.  
-- **Integration with Project Gutenberg:** Automatically fetch book data and cover images using predefined links.  
-- **Order handling:** Process library orders using MQ (oldest-first retrieval), with options to approve or reject orders.  
-- **Invoice generation:** Generate invoices for approved orders and communicate with the accounting service via RMI.  
-- **Tax calculation:** Include a 17% VAT in each invoice.  
+<h2>✨ Key Features</h2>
+<ul>
+  <li><strong>Library Application:</strong> GUI application for staff to manage members, books, and reservations.</li>
+  <li><strong>Member Application:</strong> GUI for members to browse, reserve, and download books.</li>
+  <li><strong>Supplier Application:</strong> GUI for suppliers to handle inventory and book orders.</li>
+</ul>
 
-## 📂 Technical Details  
-- **Technologies:** RESTful APIs, Redis, XML, Socket Communication, Multicast, MQ, RMI.  
-- **Logging:** Logger used for exception handling.  
-- **Configuration:** Properties files for file paths and configurations.  
-- **Serialization:** Custom serialization for invoice storage on the RMI server.  
-- **Concurrency:** Supports one library application, multiple member applications, and multiple supplier applications simultaneously.  
+<h2>📋 Library Application</h2>
+<ul>
+  <li>Manage members: approve, reject, add, update, or delete member data.</li>
+  <li>Book inventory: CRUD operations using Redis as the database.</li>
+  <li>Handle book reservations with review workflow.</li>
+  <li>Order books from suppliers using socket-based communication.</li>
+  <li>Test data is generated at startup for demonstration purposes.</li>
+</ul>
 
-## 🚀 How to Run  
-1. Start the **LibraryServer** to handle RESTful endpoints and socket communications.  
-2. Launch the **Library GUI** for staff operations.  
-3. Run the **Member GUI** application for library users.  
-4. Launch the **SupplierServer** and **Supplier GUI** for book suppliers.  
-5. Ensure all necessary configurations are set in the properties files.  
+<h2>👤 Member Application</h2>
+<ul>
+  <li><strong>Registration:</strong> Members register via REST endpoints with personal details.</li>
+  <li><strong>Login:</strong> Simple authentication system using username/password.</li>
+  <li><strong>Book browsing:</strong> Table view with filtering/search options.</li>
+  <li><strong>Book details:</strong> View cover and preview (first 100 lines).</li>
+  <li><strong>Download books:</strong> Select books to receive via email as ZIP.</li>
+  <li><strong>Chat:</strong> Secure socket-based chat system between members.</li>
+  <li><strong>Multicast:</strong> Suggest books for purchase visible to other users.</li>
+</ul>
 
-## 📈 Future Improvements  
-- Enhanced security mechanisms for user data and communication.  
-- Scalability to handle larger databases and user loads.  
-- Improved UI/UX for all applications.  
+<h2>📦 Supplier Application</h2>
+<ul>
+  <li>Manage own inventory and book offerings to the library.</li>
+  <li>Connects to Project Gutenberg for automatic book fetching.</li>
+  <li>Process orders received from library via message queue (FIFO).</li>
+  <li>Generate invoices and send them to the accounting system using RMI.</li>
+  <li>Applies 17% VAT in invoice totals.</li>
+</ul>
+
+<h2>📂 Technical Details</h2>
+<ul>
+  <li><strong>Technologies:</strong> Java, REST APIs, Redis, XML, WebSockets, Multicast, RabbitMQ, RMI.</li>
+  <li><strong>Logging:</strong> Built-in logger handles exception recording.</li>
+  <li><strong>Configurations:</strong> Properties files used for paths and ports.</li>
+  <li><strong>Serialization:</strong> Custom serialization used for invoice data.</li>
+  <li><strong>Concurrency:</strong> Supports one library app, multiple member and supplier apps running concurrently.</li>
+</ul>
+
+<h2>🚀 How to Run</h2>
+<ol>
+  <li>Start the <strong>LibraryServer</strong> (handles REST and sockets).</li>
+  <li>Launch the <strong>Library GUI</strong> application for internal operations.</li>
+  <li>Run the <strong>Member GUI</strong> for end-user interaction.</li>
+  <li>Start <strong>SupplierServer</strong> and <strong>Supplier GUI</strong> to simulate suppliers.</li>
+  <li>Ensure correct paths and configurations are loaded via .properties files.</li>
+</ol>
