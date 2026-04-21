@@ -1,93 +1,83 @@
 package org.unibl.etf.mdp.library.server;
 
+import org.unibl.etf.mdp.library.logger.FileLogger;
+import org.unibl.etf.mdp.library.properties.AppConfig;
+
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.unibl.etf.mdp.library.logger.FileLogger;
-import org.unibl.etf.mdp.library.observer.BookObserver;
-import org.unibl.etf.mdp.library.observer.InvoiceObserver;
-import org.unibl.etf.mdp.library.properties.AppConfig;
-import org.unibl.etf.mdp.library.server.ServerThread;
-import org.unibl.etf.mdp.library.services.BookService;
-import org.unibl.etf.mdp.model.BookDto;
-
 public class Server implements Runnable {
-	private static final AppConfig conf = new AppConfig();
-	private static final Logger logger = FileLogger.getLogger(Server.class.getName());
-	private static final int DISCOVERY_SERVER_TCP = conf.getDiscoveryServerTCPPort();
-	private static final String HOST = conf.getDefaultHost();
+    private static final AppConfig conf = new AppConfig();
+    private static final Logger logger = FileLogger.getLogger(Server.class.getName());
+    private static final int DISCOVERY_SERVER_TCP = conf.getDiscoveryServerTCPPort();
+    private static final String HOST = conf.getDefaultHost();
+    private static final int TCP_PORT = conf.getTCPPort();
+    private static Server instance; // Singleton instance
+    private ServerSocket serverSocket;
+    private AtomicBoolean running = new AtomicBoolean(false);
 
-	private static Server instance; // Singleton instance
+    private Server() {
+    }
 
-	private static final int TCP_PORT = conf.getTCPPort();
+    // Synchronized method to ensure only one instance is created
+    public static synchronized Server getInstance() {
+        if (instance == null) {
+            instance = new Server();
+        }
+        return instance;
+    }
 
-	private ServerSocket serverSocket;
-	private AtomicBoolean running = new AtomicBoolean(false);
+    @Override
+    public void run() {
+        try {
+            serverSocket = new ServerSocket(TCP_PORT);
+            System.out.println("Library is running on : " + TCP_PORT);
 
-	private Server() {
-	}
+            running.set(true);
 
-	// Synchronized method to ensure only one instance is created
-	public static synchronized Server getInstance() {
-		if (instance == null) {
-			instance = new Server();
-		}
-		return instance;
-	}
+            while (running.get()) {
+                try {
+                    Socket sock = serverSocket.accept();
 
-	@Override
-	public void run() {
-		try {
-			serverSocket = new ServerSocket(TCP_PORT);
-			System.out.println("Library is running on : " + TCP_PORT);
+                    ServerThread serverThread = new ServerThread(sock);
+                    serverThread.start();
+                } catch (Exception e) {
+                    if (!running.get()) {
+                        System.out.println("Server is shutting down...");
+                    } else {
+                        logger.log(Level.SEVERE, "Error accepting connection", e);
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "An error occurred in the server application", ex);
+        } finally {
+            cleanup();
+        }
+    }
 
-			running.set(true);
+    public void shutdown() {
+        try {
+            running.set(false);
+            if (serverSocket != null && !serverSocket.isClosed()) {
+                serverSocket.close();
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error during server shutdown", e);
+        }
+    }
 
-			while (running.get()) {
-				try {
-					Socket sock = serverSocket.accept();
-
-
-					ServerThread serverThread = new ServerThread(sock);
-					serverThread.start();
-				} catch (Exception e) {
-					if (!running.get()) {
-						System.out.println("Server is shutting down...");
-					} else {
-						logger.log(Level.SEVERE, "Error accepting connection", e);
-					}
-				}
-			}
-		} catch (Exception ex) {
-			logger.log(Level.SEVERE, "An error occurred in the server application", ex);
-		} finally {
-			cleanup();
-		}
-	}
-
-	public void shutdown() {
-		try {
-			running.set(false);
-			if (serverSocket != null && !serverSocket.isClosed()) {
-				serverSocket.close();
-			}
-		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Error during server shutdown", e);
-		}
-	}
-
-	private void cleanup() {
-		try {
-			if (serverSocket != null && !serverSocket.isClosed()) {
-				serverSocket.close();
-			}
-		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Error during cleanup", e);
-		}
-	}
+    private void cleanup() {
+        try {
+            if (serverSocket != null && !serverSocket.isClosed()) {
+                serverSocket.close();
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error during cleanup", e);
+        }
+    }
 
 }

@@ -7,4 +7,3 @@ public enum StatusEnum {
         return valueOf(value.toUpperCase());
     }
 }
-

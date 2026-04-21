@@ -1,36 +1,29 @@
 package org.unibl.etf.mdp.supplier.mq;
 
+import com.rabbitmq.client.*;
+import org.unibl.etf.mdp.model.Message;
+import org.unibl.etf.mdp.supplier.logger.FileLogger;
+import org.unibl.etf.mdp.supplier.properties.AppConfig;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
-import org.unibl.etf.mdp.model.Message;
-import org.unibl.etf.mdp.supplier.logger.FileLogger;
-import org.unibl.etf.mdp.supplier.properties.AppConfig;
-import org.unibl.etf.mdp.supplier.services.LibraryService;
-
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.Consumer;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
-
 public class DirectReceiver {
-	private static final AppConfig conf = new AppConfig();
-	private static final String EXCHANGE_NAME = conf.getExchangeName();
-	private static final String DIRECT = conf.getDirect();
+    private static final AppConfig conf = new AppConfig();
+    private static final String EXCHANGE_NAME = conf.getExchangeName();
+    private static final String DIRECT = conf.getDirect();
 
-	private static final Logger logger = FileLogger.getLogger(DirectReceiver.class.getName());
+    private static final Logger logger = FileLogger.getLogger(DirectReceiver.class.getName());
 
-	
-	private static DirectReceiver instance;
-	private Channel channel;
-	private Connection connection;
-	
-	private DirectReceiver() throws Exception {
+
+    private static DirectReceiver instance;
+    private Channel channel;
+    private Connection connection;
+
+    private DirectReceiver() throws Exception {
         connection = ConnectionFactoryUtil.createConnection();
         channel = connection.createChannel();
         channel.exchangeDeclare(EXCHANGE_NAME, "direct");
@@ -58,7 +51,7 @@ public class DirectReceiver {
                     ObjectInputStream objIn = new ObjectInputStream(byteIn);
                     Message message = (Message) objIn.readObject();
 
-                    handler.handleMessage(message); 
+                    handler.handleMessage(message);
                 } catch (ClassNotFoundException e) {
                     System.err.println("Failed to deserialize message: " + e.getMessage());
                 }

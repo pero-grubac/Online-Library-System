@@ -1,10 +1,9 @@
 package org.unibl.etf.mdp.library.gui;
 
-import javax.swing.*;
-
 import org.unibl.etf.mdp.model.StatusEnum;
 import org.unibl.etf.mdp.model.UserDto;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.function.Consumer;
@@ -12,8 +11,8 @@ import java.util.function.Consumer;
 public class EditUserFrame extends JFrame {
 
 
-	private static final long serialVersionUID = 1L;
-	private final UserDto user;
+    private static final long serialVersionUID = 1L;
+    private final UserDto user;
     private final Consumer<UserDto> callback;
     private JTextField firstNameField;
     private JTextField lastNameField;

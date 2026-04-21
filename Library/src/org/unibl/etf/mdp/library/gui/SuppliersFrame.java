@@ -1,18 +1,12 @@
 package org.unibl.etf.mdp.library.gui;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import org.unibl.etf.mdp.library.services.DiscoveryServerService;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Map;
-
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-
-import org.unibl.etf.mdp.library.services.DiscoveryServerService;
 
 public class SuppliersFrame extends GeneralFrame {
 
@@ -22,7 +16,7 @@ public class SuppliersFrame extends GeneralFrame {
 
     public SuppliersFrame() {
         super("Choose Supplier");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(400, 200);
         setLayout(new GridBagLayout());
 

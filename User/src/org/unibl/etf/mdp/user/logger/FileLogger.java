@@ -1,5 +1,7 @@
 package org.unibl.etf.mdp.user.logger;
 
+import org.unibl.etf.mdp.user.properties.AppConfig;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,34 +11,32 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-import org.unibl.etf.mdp.user.properties.AppConfig;
-
 
 public class FileLogger {
-	public static Logger getLogger(String className) {
-		Logger logger = Logger.getLogger(className);
+    public static Logger getLogger(String className) {
+        Logger logger = Logger.getLogger(className);
 
-		if (logger.getHandlers().length == 0) {
-			try {
-				AppConfig conf = new AppConfig();
-				String logDir = conf.getLogDir();
-				String logFile = conf.getLogFile();
+        if (logger.getHandlers().length == 0) {
+            try {
+                AppConfig conf = new AppConfig();
+                String logDir = conf.getLogDir();
+                String logFile = conf.getLogFile();
 
-				Path logDirPath = Paths.get(logDir);
-				Path logFilePath = logDirPath.resolve(logFile);
+                Path logDirPath = Paths.get(logDir);
+                Path logFilePath = logDirPath.resolve(logFile);
 
-				if (Files.notExists(logDirPath)) {
-					Files.createDirectories(logDirPath);
-				}
+                if (Files.notExists(logDirPath)) {
+                    Files.createDirectories(logDirPath);
+                }
 
-				FileHandler fileHandler = new FileHandler(logFilePath.toString(), true);
-				fileHandler.setFormatter(new SimpleFormatter());
-				logger.addHandler(fileHandler);
-				logger.setLevel(Level.ALL);
-			} catch (IOException e) {
-				logger.log(Level.SEVERE, "Failed to initialize file handler for logger", e);
-			}
-		}
-		return logger;
-	}
+                FileHandler fileHandler = new FileHandler(logFilePath.toString(), true);
+                fileHandler.setFormatter(new SimpleFormatter());
+                logger.addHandler(fileHandler);
+                logger.setLevel(Level.ALL);
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "Failed to initialize file handler for logger", e);
+            }
+        }
+        return logger;
+    }
 }

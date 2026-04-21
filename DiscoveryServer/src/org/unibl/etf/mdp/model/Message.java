@@ -4,74 +4,74 @@ import java.io.Serializable;
 
 public class Message implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private String type;
-	private String username;
-	private Object body;
-	private String entityType;
+    private String type;
+    private String username;
+    private Object body;
+    private String entityType;
 
-	public Message(String type) {
-		super();
-		this.type = type;
-	}
+    public Message(String type) {
+        super();
+        this.type = type;
+    }
 
-	public Message(String type, String username) {
-		super();
-		this.type = type;
-		this.username = username;
-	}
+    public Message(String type, String username) {
+        super();
+        this.type = type;
+        this.username = username;
+    }
 
-	public Message(String type, String username, Object body) {
-		super();
-		this.type = type;
-		this.username = username;
-		this.body = body;
-	}
+    public Message(String type, String username, Object body) {
+        super();
+        this.type = type;
+        this.username = username;
+        this.body = body;
+    }
 
-	public Message(String type, String username, Object body, String entityType) {
-		super();
-		this.type = type;
-		this.username = username;
-		this.body = body;
-		this.entityType = entityType;
-	}
+    public Message(String type, String username, Object body, String entityType) {
+        super();
+        this.type = type;
+        this.username = username;
+        this.body = body;
+        this.entityType = entityType;
+    }
 
-	public String getEntityType() {
-		return entityType;
-	}
+    public String getEntityType() {
+        return entityType;
+    }
 
-	public void setEntityType(String entityType) {
-		this.entityType = entityType;
-	}
+    public void setEntityType(String entityType) {
+        this.entityType = entityType;
+    }
 
-	public String getType() {
-		return type;
-	}
+    public String getType() {
+        return type;
+    }
 
-	public void setType(String type) {
-		this.type = type;
-	}
+    public void setType(String type) {
+        this.type = type;
+    }
 
-	public String getUsername() {
-		return username;
-	}
+    public String getUsername() {
+        return username;
+    }
 
-	public void setUsername(String username) {
-		this.username = username;
-	}
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-	public Object getBody() {
-		return body;
-	}
+    public Object getBody() {
+        return body;
+    }
 
-	public void setBody(Object body) {
-		this.body = body;
-	}
+    public void setBody(Object body) {
+        this.body = body;
+    }
 
-	@Override
-	public String toString() {
-		return "Message [type=" + type + ", username=" + username + ", body=" + body + "]";
-	}
+    @Override
+    public String toString() {
+        return "Message [type=" + type + ", username=" + username + ", body=" + body + "]";
+    }
 
 }

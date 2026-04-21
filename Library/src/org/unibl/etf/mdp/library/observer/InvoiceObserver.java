@@ -6,11 +6,11 @@ import org.unibl.etf.mdp.library.interfaces.Observer;
 import org.unibl.etf.mdp.model.Invoice;
 
 public class InvoiceObserver implements Observer {
-	@Override
-	public void onEvent(Event event) {
-		if (event instanceof InvoiceEvent) {
-			Invoice invoice = ((InvoiceEvent) event).getInvoice();
-		     handleInvoice(invoice);
+    @Override
+    public void onEvent(Event event) {
+        if (event instanceof InvoiceEvent) {
+            Invoice invoice = ((InvoiceEvent) event).getInvoice();
+            handleInvoice(invoice);
         } else {
             System.err.println("Unexpected event type: " + event.getClass().getName());
         }
