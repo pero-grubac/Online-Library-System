@@ -1,10 +1,10 @@
 package org.unibl.etf.mdp.user.gui;
 
-import java.awt.*;
-import javax.swing.*;
-
 import org.unibl.etf.mdp.model.User;
 import org.unibl.etf.mdp.user.service.LibraryService;
+
+import javax.swing.*;
+import java.awt.*;
 
 public class RegistrationFrame extends GeneralFrame {
 

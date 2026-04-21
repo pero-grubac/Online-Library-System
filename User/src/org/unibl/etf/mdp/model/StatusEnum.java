@@ -1,9 +1,9 @@
 package org.unibl.etf.mdp.model;
 
 public enum StatusEnum {
-	PENDING;
+    PENDING;
 
-	public static StatusEnum fromString(String value) {
-		return valueOf(value.toUpperCase());
-	}
+    public static StatusEnum fromString(String value) {
+        return valueOf(value.toUpperCase());
+    }
 }

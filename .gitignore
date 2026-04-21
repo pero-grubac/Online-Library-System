@@ -6,5 +6,5 @@
 **/users/
 **/mail/
 **/keystore.jks
-**/app.properties
-**/.gitignore
+**/*.class
+**/out/

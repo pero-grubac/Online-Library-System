@@ -1,148 +1,143 @@
 package org.unibl.etf.mdp.libraryserver.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.logging.Level;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import org.unibl.etf.mdp.libraryserver.mock.MockUsers;
 import org.unibl.etf.mdp.libraryserver.repository.UserRepository;
 import org.unibl.etf.mdp.model.StatusEnum;
 import org.unibl.etf.mdp.model.User;
 import org.unibl.etf.mdp.model.UserDto;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 public class UserService {
-	private final UserRepository repository = UserRepository.getInstance();
+    private final UserRepository repository = UserRepository.getInstance();
 
-	public UserService() {
-		initMockData();
-	}
+    public UserService() {
+        initMockData();
+    }
 
-	public void initMockData() {
-		if (repository.findAll().isEmpty()) {
-			List<User> mockUsers = MockUsers.mockData();
-			for (User user : mockUsers)
-				add(user);
-			System.out.println("Mock data initialized.");
-		} else {
-			System.out.println("Users already exist. Mock data not initialized.");
-		}
-	}
+    public void initMockData() {
+        if (repository.findAll().isEmpty()) {
+            List<User> mockUsers = MockUsers.mockData();
+            for (User user : mockUsers)
+                add(user);
+            System.out.println("Mock data initialized.");
+        } else {
+            System.out.println("Users already exist. Mock data not initialized.");
+        }
+    }
 
-	public UserDto add(User user) {
-		List<User> users = repository.findAll();
-		if (users.stream().anyMatch(u -> u.getUsername().equals(user.getUsername()))) {
-			return null;
-		}
+    public UserDto add(User user) {
+        List<User> users = repository.findAll();
+        if (users.stream().anyMatch(u -> u.getUsername().equals(user.getUsername()))) {
+            return null;
+        }
 
-		int nextId = getNextId(users);
-		user.setId(nextId);
-		user.setStatus(StatusEnum.PENDING);
-		users.add(user);
-		repository.saveAll(users);
+        int nextId = getNextId(users);
+        user.setId(nextId);
+        user.setStatus(StatusEnum.PENDING);
+        users.add(user);
+        repository.saveAll(users);
 
-		return new UserDto(user);
-	}
+        return new UserDto(user);
+    }
 
-	public List<UserDto> getAll() {
-		List<User> users = repository.findAll();
+    public List<UserDto> getAll() {
+        List<User> users = repository.findAll();
 
-		List<UserDto> userDtos = new ArrayList<>();
-		users.forEach(user -> userDtos.add(new UserDto(user)));
-		return userDtos;
-	}
+        List<UserDto> userDtos = new ArrayList<>();
+        users.forEach(user -> userDtos.add(new UserDto(user)));
+        return userDtos;
+    }
 
-	public boolean login(User loginUser) {
-		if (loginUser.getUsername().isBlank() || loginUser.getPassword().isBlank()) {
-			return false;
-		}
-		return repository.findByUsername(loginUser.getUsername()).filter(
-				user -> user.getPassword().equals(loginUser.getPassword()) && user.getStatus() == StatusEnum.APPROVED)
-				.isPresent();
-	}
+    public boolean login(User loginUser) {
+        if (loginUser.getUsername().isBlank() || loginUser.getPassword().isBlank()) {
+            return false;
+        }
+        return repository.findByUsername(loginUser.getUsername()).filter(
+                        user -> user.getPassword().equals(loginUser.getPassword()) && user.getStatus() == StatusEnum.APPROVED)
+                .isPresent();
+    }
 
-	public boolean approver(String username) {
-		return changeUserStatus(username, StatusEnum.APPROVED);
-	}
+    public boolean approver(String username) {
+        return changeUserStatus(username, StatusEnum.APPROVED);
+    }
 
-	public boolean reject(String username) {
-		return changeUserStatus(username, StatusEnum.REJECTED);
-	}
+    public boolean reject(String username) {
+        return changeUserStatus(username, StatusEnum.REJECTED);
+    }
 
-	public boolean block(String username) {
-		return changeUserStatus(username, StatusEnum.BLOCKED);
-	}
+    public boolean block(String username) {
+        return changeUserStatus(username, StatusEnum.BLOCKED);
+    }
 
-	private boolean changeUserStatus(String username, StatusEnum status) {
-		List<User> users = repository.findAll();
-		User user = users.stream().filter(u -> u.getUsername().equals(username)).findFirst().orElse(null);
+    private boolean changeUserStatus(String username, StatusEnum status) {
+        List<User> users = repository.findAll();
+        User user = users.stream().filter(u -> u.getUsername().equals(username)).findFirst().orElse(null);
 
-		if (user == null) {
-			return false;
-		}
+        if (user == null) {
+            return false;
+        }
 
-		user.setStatus(status);
-		repository.saveAll(users);
-		return true;
-	}
+        user.setStatus(status);
+        repository.saveAll(users);
+        return true;
+    }
 
-	public boolean delete(String username) {
-		if (username == null || username.isBlank()) {
-			return false;
-		}
-		List<User> users = repository.findAll();
-		boolean removed = users.removeIf(u -> u.getUsername().equals(username));
-		if (removed) {
-			repository.saveAll(users);
-		}
-		return removed;
-	}
+    public boolean delete(String username) {
+        if (username == null || username.isBlank()) {
+            return false;
+        }
+        List<User> users = repository.findAll();
+        boolean removed = users.removeIf(u -> u.getUsername().equals(username));
+        if (removed) {
+            repository.saveAll(users);
+        }
+        return removed;
+    }
 
-	public boolean update(UserDto userDto) {
-		if (userDto == null || userDto.getUsername() == null || userDto.getUsername().isBlank()
-				|| userDto.getFirstName() == null || userDto.getFirstName().isBlank() || userDto.getLastName() == null
-				|| userDto.getLastName().isBlank() || userDto.getAddress() == null || userDto.getAddress().isBlank()
-				|| userDto.getEmail() == null || userDto.getEmail().isBlank() || userDto.getStatus() == null) {
-			return false;
-		}
+    public boolean update(UserDto userDto) {
+        if (userDto == null || userDto.getUsername() == null || userDto.getUsername().isBlank()
+                || userDto.getFirstName() == null || userDto.getFirstName().isBlank() || userDto.getLastName() == null
+                || userDto.getLastName().isBlank() || userDto.getAddress() == null || userDto.getAddress().isBlank()
+                || userDto.getEmail() == null || userDto.getEmail().isBlank() || userDto.getStatus() == null) {
+            return false;
+        }
 
-		List<User> users = repository.findAll();
-		for (User user : users) {
-			if (user.getUsername().equals(userDto.getUsername())) {
-				user.setFirstName(userDto.getFirstName());
-				user.setLastName(userDto.getLastName());
-				user.setAddress(userDto.getAddress());
-				user.setEmail(userDto.getEmail());
-				user.setStatus(userDto.getStatus());
+        List<User> users = repository.findAll();
+        for (User user : users) {
+            if (user.getUsername().equals(userDto.getUsername())) {
+                user.setFirstName(userDto.getFirstName());
+                user.setLastName(userDto.getLastName());
+                user.setAddress(userDto.getAddress());
+                user.setEmail(userDto.getEmail());
+                user.setStatus(userDto.getStatus());
 
-				repository.saveAll(users);
-				return true;
-			}
-		}
-		return false;
-	}
+                repository.saveAll(users);
+                return true;
+            }
+        }
+        return false;
+    }
 
-	private int getNextId(List<User> users) {
-		return users.isEmpty() ? 1 : users.stream().mapToInt(User::getId).max().orElse(0) + 1;
-	}
+    private int getNextId(List<User> users) {
+        return users.isEmpty() ? 1 : users.stream().mapToInt(User::getId).max().orElse(0) + 1;
+    }
 
-	public boolean login(String username, String password) {
-		Optional<User> user = repository.findByUsername(username);
-		if (user.isPresent() && user.get().getStatus().equals(StatusEnum.APPROVED)
-				&& user.get().getPassword().equals(password)) {
-			return true;
-		}
-		return false;
-	}
+    public boolean login(String username, String password) {
+        Optional<User> user = repository.findByUsername(username);
+        if (user.isPresent() && user.get().getStatus().equals(StatusEnum.APPROVED)
+                && user.get().getPassword().equals(password)) {
+            return true;
+        }
+        return false;
+    }
 
-	public UserDto getByUsername(String username) {
-		Optional<User> user = repository.findByUsername(username);
-		if (user.isPresent())
-			return new UserDto(user.get());
-		return null;
-	}
+    public UserDto getByUsername(String username) {
+        Optional<User> user = repository.findByUsername(username);
+        if (user.isPresent())
+            return new UserDto(user.get());
+        return null;
+    }
 }
