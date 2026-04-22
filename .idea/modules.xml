@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/AccountingServer/AccountingServer.iml" filepath="$PROJECT_DIR$/AccountingServer/AccountingServer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Biblioteka.iml" filepath="$PROJECT_DIR$/Biblioteka.iml" />
+      <module fileurl="file://$PROJECT_DIR$/DiscoveryServer/DiscoveryServer.iml" filepath="$PROJECT_DIR$/DiscoveryServer/DiscoveryServer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Library/Library.iml" filepath="$PROJECT_DIR$/Library/Library.iml" />
+      <module fileurl="file://$PROJECT_DIR$/LibraryServer/LibraryServer.iml" filepath="$PROJECT_DIR$/LibraryServer/LibraryServer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Supplier/Supplier.iml" filepath="$PROJECT_DIR$/Supplier/Supplier.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SupplierServer/SupplierServer.iml" filepath="$PROJECT_DIR$/SupplierServer/SupplierServer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/User/User.iml" filepath="$PROJECT_DIR$/User/User.iml" />
+    </modules>
+  </component>
+</project>
