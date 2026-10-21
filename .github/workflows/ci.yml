@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    # Changes to documentation alone do not need a build
+    paths-ignore:
+      - '**.md'
+      - 'readme assets/**'
+      - '*.pdf'
+      - 'LICENSE*'
+      - 'NOTICE'
+      - '.env.example'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'readme assets/**'
+      - '*.pdf'
+      - 'LICENSE*'
+      - 'NOTICE'
+      - '.env.example'
+
+# A newer push to the same branch or PR cancels the run that is still going
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # cache: maven keeps ~/.m2 between runs, keyed by the pom.xml files
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+
+      # Builds independent modules in parallel and runs every test;
+      # the Redis and RabbitMQ tests use Docker on the runner
+      - name: Build and test
+        run: mvn -B -ntp -T 1C verify
+
+      - uses: docker/setup-buildx-action@v3
+
+      # Layers (Maven dependencies, Tomcat base) come from the GitHub Actions cache
+      - name: Build LibraryServer image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: LibraryServer/Dockerfile
+          tags: library-server
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: '**/target/surefire-reports/'
