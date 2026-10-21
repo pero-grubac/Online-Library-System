@@ -1,85 +1,61 @@
 package org.unibl.etf.mdp.library.gui;
 
-import org.unibl.etf.mdp.library.groupchat.GroupChatClient;
-import org.unibl.etf.mdp.library.groupchat.GroupChatHistory;
-import org.unibl.etf.mdp.library.groupchat.GroupChatListener;
+import org.unibl.etf.mdp.common.ui.BookViews;
+import org.unibl.etf.mdp.common.ui.Tasks;
 import org.unibl.etf.mdp.model.ChatMessage;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
 
-public class GroupChatForm extends JFrame implements GroupChatListener {
+/** The multicast group chat shared with all members. */
+public class GroupChatForm extends JFrame {
     private static final long serialVersionUID = 1L;
-    private JTextArea chatArea;
-    private JTextField messageField;
-    private JButton sendButton;
-    private GroupChatHistory chatHistory;
-    private GroupChatClient chatClient;
-    private String username;
+    private final Data data;
+    private final JTextArea chatArea = new JTextArea();
+    private final JTextField messageField = new JTextField();
+    private final Runnable listener = () -> SwingUtilities.invokeLater(this::loadChatHistory);
 
-    public GroupChatForm(String username) {
-        this.chatHistory = GroupChatHistory.getInstance();
-        this.chatClient = GroupChatClient.getInstance();
-        this.username = username;
-
-        setTitle("Group Chat");
+    public GroupChatForm(Data data) {
+        super("Group Chat");
+        this.data = data;
         setSize(600, 400);
         setLayout(new BorderLayout());
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-        // Chat panel
-        JPanel chatPanel = new JPanel();
-        chatPanel.setLayout(new BorderLayout());
-
-        chatArea = new JTextArea();
         chatArea.setEditable(false);
-        JScrollPane chatScrollPane = new JScrollPane(chatArea);
-        chatPanel.add(chatScrollPane, BorderLayout.CENTER);
-
-        // Input panel
-        JPanel inputPanel = new JPanel();
-        inputPanel.setLayout(new BorderLayout());
-
-        messageField = new JTextField();
-        sendButton = new JButton("Send");
+        add(new JScrollPane(chatArea), BorderLayout.CENTER);
+        JPanel inputPanel = new JPanel(new BorderLayout());
+        JButton sendButton = new JButton("Send");
         sendButton.addActionListener(e -> sendMessage());
-
         inputPanel.add(messageField, BorderLayout.CENTER);
         inputPanel.add(sendButton, BorderLayout.EAST);
-        chatPanel.add(inputPanel, BorderLayout.SOUTH);
+        add(inputPanel, BorderLayout.SOUTH);
+        getRootPane().setDefaultButton(sendButton);
 
-        add(chatPanel, BorderLayout.CENTER);
-
-        // Add listener for group chat
-        chatHistory.addListener(this);
-
-        // Load existing messages
+        data.getChat().addListener(listener);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent e) {
+                data.getChat().removeListener(listener);
+            }
+        });
         loadChatHistory();
     }
 
     private void sendMessage() {
         String message = messageField.getText().trim();
         if (message.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Message cannot be empty.", "Error", JOptionPane.ERROR_MESSAGE);
+            BookViews.error(this, "Message cannot be empty.");
             return;
         }
-        chatClient.sendMulticastMessage(username, message);
-        loadChatHistory();
-        messageField.setText("");
+        Tasks.run(this, "The message was not sent.", () -> data.sendGroupMessage(message), () -> messageField.setText(""));
     }
 
     private void loadChatHistory() {
-        chatArea.setText("");
-        List<ChatMessage> messages = chatHistory.getMessages();
-        for (ChatMessage message : messages) {
-            chatArea.append(message.getUsername() + ": " + message.getMessage() + "\n");
+        StringBuilder text = new StringBuilder();
+        for (ChatMessage message : data.getChat().getMessages()) {
+            text.append(message.getUsername()).append(": ").append(message.getMessage()).append("\n");
         }
-    }
-
-    @Override
-    public void onNewMessage() {
-        loadChatHistory();
+        chatArea.setText(text.toString());
     }
 }
-

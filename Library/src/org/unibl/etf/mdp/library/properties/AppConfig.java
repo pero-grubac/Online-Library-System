@@ -3,6 +3,8 @@ package org.unibl.etf.mdp.library.properties;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AppConfig {
     private Properties properties;
@@ -16,14 +18,13 @@ public class AppConfig {
         try (InputStream input = getClass().getClassLoader()
                 .getResourceAsStream("org/unibl/etf/mdp/library/properties/app.properties")) {
             if (input == null) {
-                System.out.println("Sorry, unable to find app.properties");
-                return;
+                throw new IllegalStateException("app.properties is missing from the classpath");
             }
             properties.load(input);
         } catch (IOException ex) {
-            ex.printStackTrace();
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            // Without its configuration the application cannot work at all
+            Logger.getLogger(AppConfig.class.getName()).log(Level.SEVERE, "Cannot read app.properties", ex);
+            throw new IllegalStateException("Cannot read app.properties", ex);
         }
     }
 
@@ -31,16 +32,8 @@ public class AppConfig {
         return properties.getProperty(key);
     }
 
-    private double getDoubleProperty(String key) {
-        return Double.parseDouble(properties.getProperty(key));
-    }
-
     private Integer getIntegerProperty(String key) {
         return Integer.parseInt(properties.getProperty(key));
-    }
-
-    public String getImageExt() {
-        return getProperty("IMAGE_EXT");
     }
 
     public String getLogDir() {
@@ -111,10 +104,6 @@ public class AppConfig {
         return getProperty("INVOICE");
     }
 
-    public String getServerBaseUrl() {
-        return getProperty("SERVER_BASE_URL");
-    }
-
     public String getServerUsersUrl() {
         return getProperty("USERS_URL");
     }
@@ -127,20 +116,8 @@ public class AppConfig {
         return getProperty("BOOKS_STATUS");
     }
 
-    public int getPreviewLines() {
-        return getIntegerProperty("PREVIEW_LINES");
-    }
-
-    public String getStartMarker() {
-        return getProperty("START_MARKER");
-    }
-
     public String getGroupMessage() {
         return getProperty("GROUP_MESSAGE");
-    }
-
-    public String getChatMsg() {
-        return getProperty("CHAT_MESSAGE");
     }
 
     public String getMulticastAdd() {
@@ -151,4 +128,41 @@ public class AppConfig {
         return getIntegerProperty("USERS_PORT");
     }
 
+    public String getQueuePrefix() {
+        return getProperty("QUEUE_PREFIX");
+    }
+
+    public int getRabbitMQPort() {
+        return getIntegerProperty("RABBITMQ_PORT");
+    }
+
+    // Staff account on the LibraryServer; LIBRARY_ADMIN_USERNAME / LIBRARY_ADMIN_PASSWORD override the file
+    public String getAdminUsername() {
+        return fromEnv("LIBRARY_ADMIN_USERNAME", getProperty("ADMIN_USERNAME"));
+    }
+
+    public String getAdminPassword() {
+        return fromEnv("LIBRARY_ADMIN_PASSWORD", getProperty("ADMIN_PASSWORD"));
+    }
+
+    private static String fromEnv(String name, String fallback) {
+        String value = System.getenv(name);
+        return value == null || value.isBlank() ? fallback : value;
+    }
+
+    public String getLibraryName() {
+        return getProperty("LIBRARY_NAME");
+    }
+
+    public String getProposalMsg() {
+        return getProperty("PROPOSAL");
+    }
+
+    public String getProposalAnswerMsg() {
+        return getProperty("PROPOSAL_ANSWER");
+    }
+
+    public String getReservationsUrl() {
+        return getProperty("RESERVATIONS_URL");
+    }
 }

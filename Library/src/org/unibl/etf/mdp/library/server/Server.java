@@ -2,82 +2,72 @@ package org.unibl.etf.mdp.library.server;
 
 import org.unibl.etf.mdp.library.logger.FileLogger;
 import org.unibl.etf.mdp.library.properties.AppConfig;
+import org.unibl.etf.mdp.library.services.DeliveryService;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Server implements Runnable {
+/** The library's TCP server, where suppliers deliver approved books, invoices and rejections. */
+public class Server {
     private static final AppConfig conf = new AppConfig();
     private static final Logger logger = FileLogger.getLogger(Server.class.getName());
-    private static final int DISCOVERY_SERVER_TCP = conf.getDiscoveryServerTCPPort();
-    private static final String HOST = conf.getDefaultHost();
-    private static final int TCP_PORT = conf.getTCPPort();
-    private static Server instance; // Singleton instance
+    private final int port;
+    private final DeliveryService deliveries;
     private ServerSocket serverSocket;
-    private AtomicBoolean running = new AtomicBoolean(false);
+    private final AtomicBoolean running = new AtomicBoolean(false);
 
-    private Server() {
+    public Server(DeliveryService deliveries) {
+        this(conf.getTCPPort(), deliveries);
     }
 
-    // Synchronized method to ensure only one instance is created
-    public static synchronized Server getInstance() {
-        if (instance == null) {
-            instance = new Server();
-        }
-        return instance;
+    public Server(int port, DeliveryService deliveries) {
+        this.port = port;
+        this.deliveries = deliveries;
     }
 
-    @Override
-    public void run() {
-        try {
-            serverSocket = new ServerSocket(TCP_PORT);
-            System.out.println("Library is running on : " + TCP_PORT);
+    /**
+     * Opens the fixed port. Only one library may run, so a second one fails here.
+     *
+     * @throws IOException when the port is taken
+     */
+    public synchronized void start() throws IOException {
+        serverSocket = new ServerSocket(port);
+        running.set(true);
+        Thread acceptor = new Thread(this::acceptLoop, "library-server");
+        acceptor.setDaemon(true);
+        acceptor.start();
+        logger.info("Library is running on port " + serverSocket.getLocalPort());
+    }
 
-            running.set(true);
-
-            while (running.get()) {
-                try {
-                    Socket sock = serverSocket.accept();
-
-                    ServerThread serverThread = new ServerThread(sock);
-                    serverThread.start();
-                } catch (Exception e) {
-                    if (!running.get()) {
-                        System.out.println("Server is shutting down...");
-                    } else {
-                        logger.log(Level.SEVERE, "Error accepting connection", e);
-                    }
+    private void acceptLoop() {
+        while (running.get()) {
+            try {
+                Socket sock = serverSocket.accept();
+                new ServerThread(sock, deliveries).start();
+            } catch (Exception e) {
+                if (running.get()) {
+                    logger.log(Level.SEVERE, "Error accepting connection", e);
                 }
             }
-        } catch (Exception ex) {
-            logger.log(Level.SEVERE, "An error occurred in the server application", ex);
-        } finally {
-            cleanup();
         }
     }
 
-    public void shutdown() {
+    public int getPort() {
+        return serverSocket.getLocalPort();
+    }
+
+    public synchronized void shutdown() {
+        running.set(false);
         try {
-            running.set(false);
-            if (serverSocket != null && !serverSocket.isClosed()) {
+            if (serverSocket != null) {
                 serverSocket.close();
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.log(Level.SEVERE, "Error during server shutdown", e);
         }
     }
-
-    private void cleanup() {
-        try {
-            if (serverSocket != null && !serverSocket.isClosed()) {
-                serverSocket.close();
-            }
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error during cleanup", e);
-        }
-    }
-
 }

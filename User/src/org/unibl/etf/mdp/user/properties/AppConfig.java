@@ -3,6 +3,8 @@ package org.unibl.etf.mdp.user.properties;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AppConfig {
     private Properties properties;
@@ -16,23 +18,18 @@ public class AppConfig {
         try (InputStream input = getClass().getClassLoader()
                 .getResourceAsStream("org/unibl/etf/mdp/user/properties/app.properties")) {
             if (input == null) {
-                System.out.println("Sorry, unable to find app.properties");
-                return;
+                throw new IllegalStateException("app.properties is missing from the classpath");
             }
             properties.load(input);
         } catch (IOException ex) {
-            ex.printStackTrace();
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            // Without its configuration the application cannot work at all
+            Logger.getLogger(AppConfig.class.getName()).log(Level.SEVERE, "Cannot read app.properties", ex);
+            throw new IllegalStateException("Cannot read app.properties", ex);
         }
     }
 
     private String getProperty(String key) {
         return properties.getProperty(key);
-    }
-
-    private double getDoubleProperty(String key) {
-        return Double.parseDouble(properties.getProperty(key));
     }
 
     private Integer getIntegerProperty(String key) {
@@ -101,5 +98,29 @@ public class AppConfig {
 
     public String getGroupMessage() {
         return getProperty("GROUP_MESSAGE");
+    }
+
+    public String getUnregisterMsg() {
+        return getProperty("UNREGISTER");
+    }
+
+    public int getHeartbeatSeconds() {
+        return getIntegerProperty("HEARTBEAT_SECONDS");
+    }
+
+    public String getProposalMsg() {
+        return getProperty("PROPOSAL");
+    }
+
+    public String getProposalAnswerMsg() {
+        return getProperty("PROPOSAL_ANSWER");
+    }
+
+    public String getReservationsUrl() {
+        return getProperty("RESERVATIONS_URL");
+    }
+
+    public String getTakenMsg() {
+        return getProperty("TAKEN");
     }
 }

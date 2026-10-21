@@ -4,13 +4,22 @@ import org.unibl.etf.mdp.libraryserver.logger.FileLogger;
 import org.unibl.etf.mdp.libraryserver.properties.AppConfig;
 import org.unibl.etf.mdp.model.BookDto;
 
-import javax.activation.*;
-import javax.mail.*;
-import javax.mail.internet.*;
-import java.io.File;
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
+import javax.mail.Authenticator;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class EmailService {
@@ -20,10 +29,28 @@ public class EmailService {
     private static final int PORT = conf.getMailPort();
     private static final String USERNAME = conf.getMailUser();
     private static final String PASSWORD = conf.getMailPass();
-    private static final String KEY_STORE_PATH = conf.getKeyStorePath();
-    private static final String KEY_STORE_PASSWORD = conf.getKeyStorePass();
 
-    public void sendEmail(String zipFilePath, String to, List<BookDto> books) {
+    /** False when no mailbox is configured, so nothing can be sent. */
+    public boolean isConfigured() {
+        return USERNAME != null && !USERNAME.isBlank() && PASSWORD != null && !PASSWORD.isBlank();
+    }
+
+    /** The text of the mail: every book with its details. */
+    public static String body(List<BookDto> books) {
+        StringBuilder body = new StringBuilder("Hello,\n\nThe books you requested are attached as a ZIP archive.\n\n");
+        int n = 1;
+        for (BookDto book : books) {
+            body.append(n++).append(". ").append(book.getTitle()).append("\n")
+                    .append("   Author:       ").append(book.getAuthor()).append("\n")
+                    .append("   Language:     ").append(book.getLanguage()).append("\n")
+                    .append("   Release date: ").append(book.getFormatedDate()).append("\n");
+        }
+        body.append("\nNumber of books: ").append(books.size()).append("\n\nOnline Library\n");
+        return body.toString();
+    }
+
+    /** @throws MessagingException when the mail could not be sent; the caller must not report success */
+    public void sendEmail(Path zipFile, String to, List<BookDto> books) throws MessagingException {
         Properties props = new Properties();
         props.put("mail.smtp.host", HOST);
         props.put("mail.smtp.port", PORT);
@@ -38,36 +65,24 @@ public class EmailService {
             }
         });
 
-        try {
-            Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(USERNAME));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
-            message.setSubject("Your Requested File");
+        Message message = new MimeMessage(session);
+        message.setFrom(new InternetAddress(USERNAME));
+        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
+        message.setSubject("Your books from the Online Library");
 
-            MimeBodyPart messageBodyPart = new MimeBodyPart();
-            StringBuilder body = new StringBuilder(
-                    "Hello,\n\nPlease find the requested file attached.\n\nList of books:\n");
-            for (BookDto book : books) {
-                body.append("- ").append(book.getTitle()).append(" by ").append(book.getAuthor()).append("\n");
-            }
-            messageBodyPart.setText(body.toString());
+        MimeBodyPart messageBodyPart = new MimeBodyPart();
+        messageBodyPart.setText(body(books), "UTF-8");
 
-            MimeBodyPart attachmentPart = new MimeBodyPart();
-            DataSource source = new FileDataSource(new File(zipFilePath));
-            attachmentPart.setDataHandler(new DataHandler(source));
-            attachmentPart.setFileName(new File(zipFilePath).getName());
+        MimeBodyPart attachmentPart = new MimeBodyPart();
+        attachmentPart.setDataHandler(new DataHandler(new FileDataSource(zipFile.toFile())));
+        attachmentPart.setFileName("books.zip");
 
-            Multipart multipart = new MimeMultipart();
-            multipart.addBodyPart(messageBodyPart);
-            multipart.addBodyPart(attachmentPart);
+        Multipart multipart = new MimeMultipart();
+        multipart.addBodyPart(messageBodyPart);
+        multipart.addBodyPart(attachmentPart);
+        message.setContent(multipart);
 
-            message.setContent(multipart);
-
-            Transport.send(message);
-
-            logger.info("Email sent successfully to " + to);
-        } catch (MessagingException e) {
-            logger.log(Level.SEVERE, "Error while sending email: " + e.getMessage(), e);
-        }
+        Transport.send(message);
+        logger.info("Email sent successfully to " + to);
     }
 }

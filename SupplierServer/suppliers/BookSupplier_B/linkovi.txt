@@ -1,0 +1,6 @@
+# One Project Gutenberg link per line
+https://www.gutenberg.org/cache/epub/2701/pg2701.txt
+https://www.gutenberg.org/cache/epub/1400/pg1400.txt
+https://www.gutenberg.org/cache/epub/98/pg98.txt
+https://www.gutenberg.org/cache/epub/174/pg174.txt
+https://www.gutenberg.org/cache/epub/768/pg768.txt

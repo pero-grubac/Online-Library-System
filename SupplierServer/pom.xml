@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.unibl.etf.mdp</groupId>
+        <artifactId>online-library-system</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>supplier-server</artifactId>
+    <name>Supplier Server</name>
+
+    <properties>
+        <main.class>org.unibl.etf.mdp.supplierserver.app.App</main.class>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.unibl.etf.mdp</groupId>
+            <artifactId>common</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>supplier-server</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

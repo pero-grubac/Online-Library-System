@@ -1,7 +1,6 @@
 package org.unibl.etf.mdp.user.chat;
 
 import org.unibl.etf.mdp.user.logger.FileLogger;
-import org.unibl.etf.mdp.user.properties.AppConfig;
 import org.unibl.etf.mdp.user.service.ChatService;
 
 import javax.net.ssl.SSLServerSocket;
@@ -12,9 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ChatServer implements Runnable {
-    private static final AppConfig conf = new AppConfig();
     private static final Logger logger = FileLogger.getLogger(ChatServer.class.getName());
-    private static final String HOST = conf.getDefaultHost();
 
     private static ChatServer instance;
     private static ChatService service;
@@ -40,17 +37,16 @@ public class ChatServer implements Runnable {
             serverSocket = (SSLServerSocket) ssf.createServerSocket(0);
             int assignedPort = serverSocket.getLocalPort();
 
-            service = ChatService.getInstance(username, assignedPort);
-            service.register();
+            // Registered only now, when the real port is known
+            service = ChatService.getInstance(username);
+            service.start(assignedPort);
             running.set(true);
             while (running.get()) {
                 try {
                     SSLSocket socket = (SSLSocket) serverSocket.accept();
                     new ChatServerThread(socket);
                 } catch (Exception e) {
-                    if (!running.get()) {
-                        System.out.println("Server is shutting down...");
-                    } else {
+                    if (running.get()) {
                         logger.log(Level.SEVERE, "Error accepting connection", e);
                     }
                 }

@@ -1,197 +1,144 @@
 package org.unibl.etf.mdp.library.gui;
 
+import org.unibl.etf.mdp.common.ui.BookViews;
+import org.unibl.etf.mdp.common.ui.Tasks;
 import org.unibl.etf.mdp.library.services.SupplierService;
 import org.unibl.etf.mdp.model.BookDto;
-import org.unibl.etf.mdp.model.Message;
+import org.unibl.etf.mdp.model.OrderItem;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
-public class SuppliersBookFrame extends GeneralFrame {
-
+/** A supplier's offer; the librarian puts books with a quantity in the cart and orders them. */
+public class SuppliersBookFrame extends JFrame {
     private static final long serialVersionUID = 1L;
-    private final Dimension buttonSize = new Dimension(100, 30);
-    private List<BookDto> cart; // Korpa za knjige
-    private String username;
+    private final Data data;
+    private final String supplier;
+    // Keyed by book key, in the order the books were added
+    private final Map<String, OrderItem> cart = new LinkedHashMap<>();
+    private final JPanel bookListPanel = new JPanel();
+    private final JButton cartButton = new JButton("Cart (0)");
 
-    public SuppliersBookFrame(String supplierName, int port) {
-        super("Books of " + supplierName);
-        this.username = supplierName;
-        setSize(1000, 700);
+    public SuppliersBookFrame(Data data, String supplier, int port) {
+        super("Books of " + supplier);
+        this.data = data;
+        this.supplier = supplier;
+        setSize(900, 680);
         setLayout(new BorderLayout());
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        cart = new ArrayList<>(); // Inicijalizacija korpe
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-        JPanel bookListPanel = new JPanel();
         bookListPanel.setLayout(new BoxLayout(bookListPanel, BoxLayout.Y_AXIS));
         JScrollPane scrollPane = new JScrollPane(bookListPanel);
-
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         add(scrollPane, BorderLayout.CENTER);
 
-        // Dugme za naručivanje
-        JPanel topPanel = new JPanel();
-        JButton orderButton = createButton("Order");
-        orderButton.addActionListener(e -> orderBooks(supplierName, port));
-
-        JButton cartButton = createButton("Cart");
-        cartButton.addActionListener(e -> showCartDialog());
-
-        topPanel.add(orderButton);
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        cartButton.addActionListener(e -> showCart());
+        JButton orderButton = new JButton("Order");
+        orderButton.addActionListener(e -> order());
         topPanel.add(cartButton);
-
+        topPanel.add(orderButton);
         add(topPanel, BorderLayout.NORTH);
 
-        List<BookDto> books = SupplierService.getOfferedBooks(supplierName, port);
+        bookListPanel.add(new JLabel("  Loading the offer..."));
+        Tasks.load(this, "The offer of " + supplier + " could not be loaded.",
+                () -> SupplierService.getOfferedBooks(data.getUsername(), port), this::show);
+    }
 
+    private void show(List<BookDto> books) {
+        bookListPanel.removeAll();
+        if (books.isEmpty()) {
+            bookListPanel.add(new JLabel("  " + supplier + " offers no books."));
+        }
         for (BookDto book : books) {
-            bookListPanel.add(createBookPanel(book));
+            JSpinner quantity = new JSpinner(new SpinnerNumberModel(1, 1, 999, 1));
+            quantity.setPreferredSize(new Dimension(60, quantity.getPreferredSize().height));
+            JButton details = new JButton("Details");
+            details.addActionListener(e -> BookViews.showDetails(this, book));
+            JButton add = new JButton("Add to cart");
+            add.addActionListener(e -> addToCart(book, (Integer) quantity.getValue()));
+            bookListPanel.add(BookViews.bookRow(book, details, new JLabel("Quantity:"), quantity, add));
         }
+        bookListPanel.revalidate();
+        bookListPanel.repaint();
     }
 
-    private JPanel createBookPanel(BookDto book) {
-        JPanel bookPanel = new JPanel();
-        bookPanel.setLayout(new BorderLayout());
-        bookPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        bookPanel.setMaximumSize(new Dimension(900, 180));
+    private void addToCart(BookDto book, int quantity) {
+        OrderItem existing = cart.get(book.getKey());
+        int total = existing == null ? quantity : existing.getQuantity() + quantity;
+        cart.put(book.getKey(), new OrderItem(book, total));
+        updateCartButton();
+    }
 
-        JLabel coverLabel = new JLabel();
-        ImageIcon coverImage = null;
+    private void updateCartButton() {
+        int copies = cart.values().stream().mapToInt(OrderItem::getQuantity).sum();
+        cartButton.setText("Cart (" + copies + ")");
+    }
 
-        if (book.getCoverImageBytes() != null) {
-            BufferedImage bi = null;
-            try (ByteArrayInputStream bais = new ByteArrayInputStream(book.getCoverImageBytes())) {
-                bi = ImageIO.read(bais);
-            } catch (Exception e) {
-                System.err.println("Error while converting bytes to cover image: " + e.getMessage());
+    /** Shows the cart; quantities can be changed and rows removed. */
+    private void showCart() {
+        DefaultTableModel model = new DefaultTableModel(new String[]{"Book", "Author", "Quantity"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column == 2;
             }
-            if (bi != null) {
-                coverImage = new ImageIcon(bi);
-                Image scaledImage = coverImage.getImage().getScaledInstance(100, 150, Image.SCALE_SMOOTH);
-                coverLabel.setIcon(new ImageIcon(scaledImage));
+
+            @Override
+            public Class<?> getColumnClass(int column) {
+                return column == 2 ? Integer.class : String.class;
             }
-        } else {
-            coverLabel.setText("No Image");
+        };
+        List<OrderItem> items = new ArrayList<>(cart.values());
+        for (OrderItem item : items) {
+            model.addRow(new Object[]{item.getBook().getTitle(), item.getBook().getAuthor(), item.getQuantity()});
         }
-
-        JPanel attributesPanel = new JPanel();
-        attributesPanel.setLayout(new BoxLayout(attributesPanel, BoxLayout.Y_AXIS));
-
-        JLabel authorLabel = new JLabel("Author: " + book.getAuthor());
-        JLabel titleLabel = new JLabel("Title: " + book.getTitle());
-        JLabel languageLabel = new JLabel("Language: " + book.getLanguage());
-        JLabel releaseDateLabel = new JLabel("Release Date: " + book.getFormatedDate());
-
-        attributesPanel.add(authorLabel);
-        attributesPanel.add(titleLabel);
-        attributesPanel.add(languageLabel);
-        attributesPanel.add(releaseDateLabel);
-
-        // Dugmad za interakciju
-        JPanel buttonPanel = new JPanel();
-        JButton previewButton = createButton("Preview");
-        previewButton.addActionListener(e -> showPreviewDialog(book.getPreview()));
-
-        JButton addButton = createButton("Add");
-        addButton.addActionListener(e -> {
-            if (cart.contains(book)) {
-                JOptionPane.showMessageDialog(this, "Book already in cart!", "Info", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                cart.add(book);
-                JOptionPane.showMessageDialog(this, "Book added to cart!", "Info", JOptionPane.INFORMATION_MESSAGE);
+        JTable table = new JTable(model);
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setPreferredSize(new Dimension(520, 220));
+        JPanel panel = new JPanel(new BorderLayout(4, 4));
+        panel.add(scroll, BorderLayout.CENTER);
+        JButton remove = new JButton("Remove selected");
+        remove.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row >= 0) {
+                model.removeRow(row);
+                items.remove(row);
             }
         });
-
-        buttonPanel.add(previewButton);
-        buttonPanel.add(addButton);
-
-        bookPanel.add(coverLabel, BorderLayout.WEST);
-        bookPanel.add(attributesPanel, BorderLayout.CENTER);
-        bookPanel.add(buttonPanel, BorderLayout.EAST);
-
-        return bookPanel;
-    }
-
-    private void showPreviewDialog(String preview) {
-        JTextArea previewTextArea = new JTextArea(preview);
-        previewTextArea.setLineWrap(true);
-        previewTextArea.setWrapStyleWord(true);
-        previewTextArea.setEditable(false);
-
-        JScrollPane scrollPane = new JScrollPane(previewTextArea);
-        scrollPane.setPreferredSize(new Dimension(600, 400));
-
-        JOptionPane.showMessageDialog(this, scrollPane, "Book Preview", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    private void showCartDialog() {
-        JTextArea cartTextArea = new JTextArea();
-        cartTextArea.setLineWrap(true);
-        cartTextArea.setWrapStyleWord(true);
-        cartTextArea.setEditable(false);
-
-        StringBuilder cartContent = new StringBuilder();
-        for (int i = 0; i < cart.size(); i++) {
-            cartContent.append(i + 1).append(". ").append(cart.get(i).displayPrice()).append("\n");
-        }
-
-        cartTextArea.setText(cartContent.toString());
-
-        JScrollPane scrollPane = new JScrollPane(cartTextArea);
-        scrollPane.setPreferredSize(new Dimension(600, 400));
-
-        JButton removeButton = createButton("Remove");
-        removeButton.addActionListener(e -> {
-            String indexStr = JOptionPane.showInputDialog(this, "Enter the number of the book to remove:");
-            try {
-                int index = Integer.parseInt(indexStr) - 1;
-                if (index >= 0 && index < cart.size()) {
-                    cart.remove(index);
-                    JOptionPane.showMessageDialog(this, "Book removed from cart!", "Success",
-                            JOptionPane.INFORMATION_MESSAGE);
-                    showCartDialog(); // Refresh cart dialog
-                } else {
-                    JOptionPane.showMessageDialog(this, "Invalid number!", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Invalid input!", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-
-        JPanel dialogPanel = new JPanel();
-        dialogPanel.setLayout(new BorderLayout());
-        dialogPanel.add(scrollPane, BorderLayout.CENTER);
-        dialogPanel.add(removeButton, BorderLayout.SOUTH);
-
-        JOptionPane.showMessageDialog(this, dialogPanel, "Cart", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    private void orderBooks(String supplierName, int port) {
-        if (cart.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Cart is empty!", "Warning", JOptionPane.WARNING_MESSAGE);
+        panel.add(remove, BorderLayout.SOUTH);
+        if (JOptionPane.showConfirmDialog(this, panel, "Cart", JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
             return;
         }
-        String request = conf.getRequestMsg();
-        Message msg = new Message(request, "library", cart);
-        try {
-            Data.initSender();
-            Data.getSender().sendMessage(username, msg);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        if (table.isEditing()) {
+            table.getCellEditor().stopCellEditing();
         }
-        Data.shutdownMQ();
         cart.clear();
+        for (int i = 0; i < items.size(); i++) {
+            Object value = model.getValueAt(i, 2);
+            int quantity = value instanceof Integer ? (Integer) value : 0;
+            if (quantity > 0) {
+                cart.put(items.get(i).getBook().getKey(), new OrderItem(items.get(i).getBook(), quantity));
+            }
+        }
+        updateCartButton();
     }
 
-    private JButton createButton(String text) {
-        JButton button = new JButton(text);
-        button.setPreferredSize(buttonSize);
-        return button;
+    private void order() {
+        if (cart.isEmpty()) {
+            BookViews.error(this, "The cart is empty.");
+            return;
+        }
+        List<OrderItem> items = new ArrayList<>(cart.values());
+        Tasks.run(this, "The order was not sent; the cart is kept.", () -> data.sendOrder(supplier, items), () -> {
+            cart.clear();
+            updateCartButton();
+            BookViews.info(this, "Order sent to " + supplier + ". Approved books will appear in the catalogue.");
+        });
     }
 }

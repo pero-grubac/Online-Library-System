@@ -1,135 +1,166 @@
 package org.unibl.etf.mdp.user.gui;
 
+import org.unibl.etf.mdp.common.ui.BookViews;
+import org.unibl.etf.mdp.common.ui.Tasks;
 import org.unibl.etf.mdp.model.BookDto;
+import org.unibl.etf.mdp.model.Reservation;
 import org.unibl.etf.mdp.user.service.BookService;
+import org.unibl.etf.mdp.user.service.ReservationService;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+/** The member's view of the catalogue: search, details, reservation and books by e-mail. */
 public class MainFrame extends GeneralFrame {
-
     private static final long serialVersionUID = 1L;
-    private static final BookService service = BookService.getInstance();
-    private static final Map<String, JFrame> openForms = new HashMap<>();
-    private JTable bookTable;
-    private BookTableModel bookTableModel;
-    private Data data;
-    private JTextField searchField;
+    private final Map<String, JFrame> openForms = new HashMap<>();
+    private final BookTableModel bookTableModel = new BookTableModel();
+    private final JTable bookTable = new JTable(bookTableModel);
+    private final JTextField searchField = new JTextField(22);
+    private final JLabel status = new JLabel(" ");
+    private final Data data;
+    private List<BookDto> catalogue = new ArrayList<>();
 
     public MainFrame(String username) {
         super("Library - " + username);
-        setSize(800, 600);
+        setSize(980, 620);
         data = Data.getInstance(username);
-        JPanel mainPanel = new JPanel(new BorderLayout());
 
-        // Top buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton sendBooksButton = new JButton("Send Books");
-        sendBooksButton.addActionListener(e -> sendSelectedBooks());
+        buttonPanel.add(button("Send to my e-mail", this::sendSelectedBooks));
+        buttonPanel.add(button("Reserve", this::reserveSelectedBooks));
+        buttonPanel.add(button("My reservations", () -> open("reservations", MyReservationsFrame::new)));
+        buttonPanel.add(button("Propose a book", () -> open("proposals", () -> new ProposalsFrame(data))));
+        buttonPanel.add(button("Chat", () -> open("chat", () -> new ChatForm(data.getUsername()))));
+        buttonPanel.add(button("Group chat", () -> open("group", () -> new GroupChatForm(data))));
 
-        JButton btn2 = new JButton("Group chat");
-        JButton btn3 = new JButton("Chat");
-        btn3.addActionListener(e -> openForm("ChatForm", () -> new ChatForm(data.getUsername())));
-        btn2.addActionListener(e -> openForm("GroupChatForm", () -> new GroupChatForm(data.getUsername())));
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        searchPanel.add(new JLabel("Search title, author or language:"));
+        searchPanel.add(searchField);
+        searchPanel.add(button("Search", this::applySearch));
+        searchPanel.add(button("Refresh", this::loadBooks));
+        searchField.addActionListener(e -> applySearch());
 
-        buttonPanel.add(sendBooksButton);
-        buttonPanel.add(btn3);
-        buttonPanel.add(btn2);
+        JPanel top = new JPanel(new GridLayout(2, 1));
+        top.add(buttonPanel);
+        top.add(searchPanel);
 
-        mainPanel.add(buttonPanel, BorderLayout.NORTH);
+        bookTable.setRowHeight(26);
+        bookTable.getColumnModel().getColumn(0).setMaxWidth(60);
+        bookTable.getColumnModel().getColumn(6).setMaxWidth(90);
+        DetailsButton details = new DetailsButton();
+        bookTable.getColumnModel().getColumn(6).setCellRenderer(details);
+        bookTable.getColumnModel().getColumn(6).setCellEditor(details);
 
-        // Search field
-        searchField = new JTextField(30);
-        JButton searchButton = new JButton("Search");
-        searchButton.addActionListener(e -> searchBooks());
-        buttonPanel.add(new JLabel("Search:"));
-        buttonPanel.add(searchField);
-        buttonPanel.add(searchButton);
-
-        mainPanel.add(buttonPanel, BorderLayout.NORTH);
-
-        // Book table
-        bookTableModel = new BookTableModel(BookService.getInstance().getAll());
-        bookTable = new JTable(bookTableModel);
-
-        bookTable.getColumn("Details").setCellRenderer(new ButtonRenderer());
-        bookTable.getColumn("Details").setCellEditor(new ButtonEditor(new JCheckBox(), bookTableModel.getBooks()));
-
-        JScrollPane scrollPane = new JScrollPane(bookTable);
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
-
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(top, BorderLayout.NORTH);
+        mainPanel.add(new JScrollPane(bookTable), BorderLayout.CENTER);
+        status.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+        mainPanel.add(status, BorderLayout.SOUTH);
         add(mainPanel);
+        loadBooks();
     }
 
-    private void openForm(String formKey, FormCreator creator) {
-        JFrame existingForm = openForms.get(formKey);
-        if (existingForm == null || !existingForm.isVisible()) {
-            JFrame newForm = creator.create();
-            openForms.put(formKey, newForm);
-            newForm.setVisible(true);
-        } else {
-            existingForm.toFront();
+    private static JButton button(String text, Runnable action) {
+        JButton button = new JButton(text);
+        button.addActionListener(e -> action.run());
+        return button;
+    }
+
+    private void open(String key, Supplier<JFrame> creator) {
+        JFrame existing = openForms.get(key);
+        if (existing == null || !existing.isDisplayable()) {
+            existing = creator.get();
+            existing.setLocationRelativeTo(this);
+            openForms.put(key, existing);
         }
+        existing.setVisible(true);
+        existing.toFront();
     }
 
-    private void searchBooks() {
+    private void loadBooks() {
+        status.setText("Loading the catalogue...");
+        Tasks.load(this, "The catalogue could not be loaded.", () -> BookService.getInstance().getAll(), books -> {
+            catalogue = books;
+            applySearch();
+        });
+    }
+
+    private void applySearch() {
         String query = searchField.getText().trim().toLowerCase();
+        List<BookDto> found = query.isEmpty() ? catalogue : catalogue.stream()
+                .filter(b -> contains(b.getTitle(), query) || contains(b.getAuthor(), query)
+                        || contains(b.getLanguage(), query))
+                .collect(Collectors.toList());
+        bookTableModel.updateBooks(found);
+        status.setText(found.size() + " of " + BookViews.books(catalogue.size()));
+    }
 
-        // Ako je string za pretragu prazan, prikazujemo sve knjige
-        if (query.isEmpty()) {
-            bookTableModel.updateBooks(BookService.getInstance().getAll());
-        } else {
-            // Filtriramo knjige po naslovu
-            List<BookDto> filteredBooks = BookService.getInstance().getAll().stream()
-                    .filter(book -> book.getTitle().toLowerCase().contains(query)).collect(Collectors.toList());
-            bookTableModel.updateBooks(filteredBooks);
+    private static boolean contains(String value, String query) {
+        return value != null && value.toLowerCase().contains(query);
+    }
+
+    private List<BookDto> selectedOrWarn() {
+        List<BookDto> selected = bookTableModel.getSelectedBooks();
+        if (selected.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Tick at least one book.", "Warning", JOptionPane.WARNING_MESSAGE);
         }
+        return selected;
     }
 
     private void sendSelectedBooks() {
-        List<BookDto> selectedBooks = bookTableModel.getSelectedBooks();
-        if (selectedBooks.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please select at least one book.", "Warning",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
+        List<BookDto> selectedBooks = selectedOrWarn();
+        if (!selectedBooks.isEmpty()) {
+            String before = status.getText();
+            status.setText("Sending " + BookViews.books(selectedBooks.size()) + "...");
+            Tasks.load(this, "The books were not sent.", () -> {
+                try {
+                    return BookService.getInstance().sendBooksToEmail(selectedBooks, data.getUsername());
+                } finally {
+                    // Queued before done(), so a success message still replaces it
+                    SwingUtilities.invokeLater(() -> status.setText(before));
+                }
+            }, message -> {
+                        status.setText(message);
+                        BookViews.info(this, message);
+                    });
         }
-
-        BookService.getInstance().sendBooksToEmail(selectedBooks, data.getUsername());
-        JOptionPane.showMessageDialog(this, "Books sent to " + data.getUsername() + ".", "Success",
-                JOptionPane.INFORMATION_MESSAGE);
     }
 
-    @FunctionalInterface
-    interface FormCreator {
-        JFrame create();
+    private void reserveSelectedBooks() {
+        List<BookDto> selectedBooks = selectedOrWarn();
+        if (!selectedBooks.isEmpty()) {
+            Tasks.load(this, "The reservation failed.", () -> {
+                List<String> outcome = new ArrayList<>();
+                for (BookDto book : selectedBooks) {
+                    try {
+                        Reservation r = ReservationService.getInstance().reserve(book);
+                        outcome.add(r.getBookTitle() + ": reserved, waiting for the library");
+                    } catch (Exception e) {
+                        outcome.add(book.getTitle() + ": " + e.getMessage());
+                    }
+                }
+                return outcome;
+            }, outcome -> BookViews.info(this, String.join("\n", outcome)));
+        }
     }
 
-    // Table model for books
+    /** Rows of the current (possibly searched) list; selection and details always use this same list. */
     private static class BookTableModel extends AbstractTableModel {
-
         private final String[] columnNames = {"Select", "Title", "Author", "Language", "Release Date", "Price",
                 "Details"};
         private final Class<?>[] columnClasses = {Boolean.class, String.class, String.class, String.class,
-                String.class, Double.class, String.class};
-        private List<BookDto> books;
-        private Boolean[] selected;
-
-        public BookTableModel(List<BookDto> books) {
-            this.books = new ArrayList<>(books);
-            this.selected = new Boolean[books.size()];
-            for (int i = 0; i < selected.length; i++) {
-                selected[i] = false;
-            }
-        }
+                String.class, Integer.class, String.class};
+        private List<BookDto> books = new ArrayList<>();
+        private boolean[] selected = new boolean[0];
 
         @Override
         public int getRowCount() {
@@ -139,6 +170,10 @@ public class MainFrame extends GeneralFrame {
         @Override
         public int getColumnCount() {
             return columnNames.length;
+        }
+
+        BookDto bookAt(int row) {
+            return books.get(row);
         }
 
         @Override
@@ -157,10 +192,8 @@ public class MainFrame extends GeneralFrame {
                     return book.getFormatedDate();
                 case 5:
                     return book.getPrice();
-                case 6:
-                    return "Details";
                 default:
-                    return null;
+                    return "Details";
             }
         }
 
@@ -186,103 +219,52 @@ public class MainFrame extends GeneralFrame {
             return columnClasses[columnIndex];
         }
 
-        public List<BookDto> getBooks() {
-            return books;
-        }
-
-        public List<BookDto> getSelectedBooks() {
-            return books.stream().filter(book -> selected[books.indexOf(book)])
-                    .collect(Collectors.toCollection(ArrayList::new));
-        }
-
-        public void updateBooks(List<BookDto> newBooks) {
-            books = new ArrayList<>(newBooks); // Kreiramo novu listu sa novim knjigama
-
-            // Resetujemo izbor za sve knjige
-            selected = new Boolean[newBooks.size()];
-            for (int i = 0; i < selected.length; i++) {
-                selected[i] = false;
+        List<BookDto> getSelectedBooks() {
+            List<BookDto> result = new ArrayList<>();
+            for (int i = 0; i < books.size(); i++) {
+                if (selected[i]) {
+                    result.add(books.get(i));
+                }
             }
+            return result;
+        }
 
-            // Obaveštavamo JTable da su podaci promenjeni
+        void updateBooks(List<BookDto> newBooks) {
+            books = new ArrayList<>(newBooks);
+            selected = new boolean[books.size()];
             fireTableDataChanged();
         }
-
-
     }
 
-    private static class ButtonRenderer extends JButton implements javax.swing.table.TableCellRenderer {
-        public ButtonRenderer() {
-            setOpaque(true);
+    /** The "Details" button of each row; it opens the book of the row it is in, in the list shown now. */
+    private class DetailsButton extends AbstractCellEditor implements TableCellRenderer, javax.swing.table.TableCellEditor {
+        private final JButton renderer = new JButton("Details");
+        private final JButton editor = new JButton("Details");
+        private int row;
+
+        DetailsButton() {
+            editor.addActionListener(e -> {
+                fireEditingStopped();
+                BookViews.showDetails(MainFrame.this, bookTableModel.bookAt(bookTable.convertRowIndexToModel(row)));
+            });
         }
 
         @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
-                                                       int row, int column) {
-            setText(value == null ? "Details" : value.toString());
-            return this;
-        }
-    }
-
-    private class ButtonEditor extends DefaultCellEditor {
-        private JButton button;
-        private List<BookDto> books;
-        private int currentRow;
-
-        public ButtonEditor(JCheckBox checkBox, List<BookDto> books) {
-            super(checkBox);
-            this.books = books;
-            button = new JButton();
-            button.setOpaque(true);
-            button.addActionListener(e -> fireEditingStopped());
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                                       boolean hasFocus, int row, int column) {
+            return renderer;
         }
 
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row,
                                                      int column) {
-            button.setText(value == null ? "Details" : value.toString());
-            currentRow = row;
-            return button;
+            this.row = row;
+            return editor;
         }
 
         @Override
         public Object getCellEditorValue() {
-            showBookDetails(books.get(currentRow));
             return "Details";
         }
-
-        private void showBookDetails(BookDto book) {
-            JPanel detailsPanel = new JPanel(new BorderLayout(20, 20)); // Dodan veći razmak između elemenata
-            detailsPanel.setPreferredSize(new Dimension(500, 300)); // Povećana dimenzija panela
-
-            // Slika knjige
-            JLabel coverLabel = new JLabel();
-            if (book.getCoverImageBytes() != null) {
-                try (ByteArrayInputStream bais = new ByteArrayInputStream(book.getCoverImageBytes())) {
-                    BufferedImage bi = ImageIO.read(bais);
-                    coverLabel.setIcon(new ImageIcon(bi.getScaledInstance(150, 200, Image.SCALE_SMOOTH))); // Veća slika
-                } catch (Exception e) {
-                    coverLabel.setText("No Image");
-                }
-            } else {
-                coverLabel.setText("No Image");
-            }
-
-            // Book preview
-            JTextArea previewArea = new JTextArea(book.getPreview());
-            previewArea.setEditable(false);
-            previewArea.setLineWrap(true);
-            previewArea.setWrapStyleWord(true);
-
-            JScrollPane previewScrollPane = new JScrollPane(previewArea);
-            previewScrollPane.setPreferredSize(new Dimension(300, 200)); // Povećana dimenzija za tekstualni pregled
-
-            detailsPanel.add(coverLabel, BorderLayout.WEST);
-            detailsPanel.add(previewScrollPane, BorderLayout.CENTER);
-
-            JOptionPane.showMessageDialog(MainFrame.this, detailsPanel, "Book Details",
-                    JOptionPane.INFORMATION_MESSAGE);
-        }
-
     }
 }

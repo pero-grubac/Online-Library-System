@@ -3,6 +3,8 @@ package org.unibl.etf.mdp.accountingserver.properties;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AppConfig {
     private Properties properties;
@@ -16,14 +18,13 @@ public class AppConfig {
         try (InputStream input = getClass().getClassLoader()
                 .getResourceAsStream("org/unibl/etf/mdp/accountingserver/properties/app.properties")) {
             if (input == null) {
-                System.out.println("Sorry, unable to find app.properties");
-                return;
+                throw new IllegalStateException("app.properties is missing from the classpath");
             }
             properties.load(input);
         } catch (IOException ex) {
-            ex.printStackTrace();
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            // Without its configuration the application cannot work at all
+            Logger.getLogger(AppConfig.class.getName()).log(Level.SEVERE, "Cannot read app.properties", ex);
+            throw new IllegalStateException("Cannot read app.properties", ex);
         }
     }
 
@@ -31,20 +32,8 @@ public class AppConfig {
         return properties.getProperty(key);
     }
 
-    private double getDoubleProperty(String key) {
-        return Double.parseDouble(properties.getProperty(key));
-    }
-
     private Integer getIntegerProperty(String key) {
         return Integer.parseInt(properties.getProperty(key));
-    }
-
-    public String getSecurityDir() {
-        return getProperty("SECURITY_DIR");
-    }
-
-    public String getImageExt() {
-        return getProperty("IMAGE_EXT");
     }
 
     public String getRegistryName() {
@@ -55,19 +44,23 @@ public class AppConfig {
         return getIntegerProperty("REGISTRY_PORT");
     }
 
-    public String getSecurityFile() {
-        return getProperty("SECURITY_FILE");
-    }
-
-    public String getSecurityPolicy() {
-        return getProperty("SECURITY_POLICY");
-    }
-
     public String getLogDir() {
         return getProperty("LOG_DIR");
     }
 
     public String getLogFile() {
         return getProperty("LOG_FILE");
+    }
+
+    public String getInvoicesDir() {
+        return getProperty("INVOICES_DIR");
+    }
+
+    public String getInvoiceDatePattern() {
+        return getProperty("INVOICE_DATE_PATTERN");
+    }
+
+    public String getVatRate() {
+        return getProperty("VAT_RATE");
     }
 }

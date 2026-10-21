@@ -3,6 +3,8 @@ package org.unibl.etf.mdp.supplier.properties;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AppConfig {
     private Properties properties;
@@ -16,23 +18,18 @@ public class AppConfig {
         try (InputStream input = getClass().getClassLoader()
                 .getResourceAsStream("org/unibl/etf/mdp/supplier/properties/app.properties")) {
             if (input == null) {
-                System.out.println("Sorry, unable to find app.properties");
-                return;
+                throw new IllegalStateException("app.properties is missing from the classpath");
             }
             properties.load(input);
         } catch (IOException ex) {
-            ex.printStackTrace();
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            // Without its configuration the application cannot work at all
+            Logger.getLogger(AppConfig.class.getName()).log(Level.SEVERE, "Cannot read app.properties", ex);
+            throw new IllegalStateException("Cannot read app.properties", ex);
         }
     }
 
     private String getProperty(String key) {
         return properties.getProperty(key);
-    }
-
-    private double getDoubleProperty(String key) {
-        return Double.parseDouble(properties.getProperty(key));
     }
 
     private Integer getIntegerProperty(String key) {
@@ -59,32 +56,12 @@ public class AppConfig {
         return getProperty("LOG_FILE");
     }
 
-    public String getSecurityDir() {
-        return getProperty("SECURITY_DIR");
-    }
-
-    public String getSecurityFile() {
-        return getProperty("SECURITY_FILE");
-    }
-
     public String getRegistryName() {
         return getProperty("REGISTRY_NAME");
     }
 
     public int getRegistryPort() {
         return getIntegerProperty("REGISTRY_PORT");
-    }
-
-    public String getSecurityPolicy() {
-        return getProperty("SECURITY_POLICY");
-    }
-
-    public String getSuppliersDir() {
-        return getProperty("SUPPLIERS_DIR");
-    }
-
-    public String getLinksFile() {
-        return getProperty("LINKS_FILE");
     }
 
     public String getDtoMsg() {
@@ -105,14 +82,6 @@ public class AppConfig {
 
     public String getOkMsg() {
         return getProperty("OK");
-    }
-
-    public String getDiscoverAllMsg() {
-        return getProperty("DISCOVER_ALL");
-    }
-
-    public String getRequestMsg() {
-        return getProperty("REQUEST");
     }
 
     public String getApproveMsg() {
@@ -147,7 +116,53 @@ public class AppConfig {
         return getProperty("INVOICE");
     }
 
-    public String getImageExt() {
-        return getProperty("IMAGE_EXT");
+    public String getUnregisterMsg() {
+        return getProperty("UNREGISTER");
+    }
+
+    public int getHeartbeatSeconds() {
+        return getIntegerProperty("HEARTBEAT_SECONDS");
+    }
+
+    public String getQueuePrefix() {
+        return getProperty("QUEUE_PREFIX");
+    }
+
+    public int getRabbitMQPort() {
+        return getIntegerProperty("RABBITMQ_PORT");
+    }
+
+    /** The suppliers this application can log in as (SUPPLIER_NAMES, comma separated). */
+    public java.util.List<String> getSupplierNames() {
+        return java.util.Arrays.stream(getProperty("SUPPLIER_NAMES").split(",")).map(String::trim)
+                .filter(n -> !n.isEmpty()).collect(java.util.stream.Collectors.toList());
+    }
+
+    public String getRmiHost() {
+        return getProperty("RMI_HOST");
+    }
+
+    public int getPriceMin() {
+        return getIntegerProperty("PRICE_MIN");
+    }
+
+    public int getPriceMax() {
+        return getIntegerProperty("PRICE_MAX");
+    }
+
+    public String getLoadLinksMsg() {
+        return getProperty("LOAD_LINKS");
+    }
+
+    public String getAddBookMsg() {
+        return getProperty("ADD_BOOK");
+    }
+
+    public String getErrorMsg() {
+        return getProperty("ERROR");
+    }
+
+    public String getTakenMsg() {
+        return getProperty("TAKEN");
     }
 }

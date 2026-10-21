@@ -1,0 +1,6 @@
+# One Project Gutenberg link per line
+https://www.gutenberg.org/cache/epub/5200/pg5200.txt
+https://www.gutenberg.org/cache/epub/1497/pg1497.txt
+https://www.gutenberg.org/cache/epub/996/pg996.txt
+https://www.gutenberg.org/cache/epub/2554/pg2554.txt
+https://www.gutenberg.org/cache/epub/74/pg74.txt

@@ -20,7 +20,12 @@ public class App {
             ServerSocket ss = new ServerSocket(TCP_PORT);
             while (true) {
                 Socket sock = ss.accept();
-                new ServerThread(sock);
+                try {
+                    new ServerThread(sock);
+                } catch (Exception ex) {
+                    logger.log(Level.WARNING, "Could not serve a connection", ex);
+                    sock.close();
+                }
             }
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "An error occurred in the server application", ex);

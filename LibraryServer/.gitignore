@@ -3,5 +3,11 @@
 /log/
 /users/
 /mail/
+/target/
+/USERS_FOLDER/
+/ZIP_FOLDER/
 keystore.jks
 **/app.properties
+# Defaults without secrets; real credentials come from environment variables
+!src/main/resources/**/app.properties
+!src/test/resources/**/app.properties

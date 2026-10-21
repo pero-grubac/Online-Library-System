@@ -2,37 +2,26 @@ package org.unibl.etf.mdp.library.services;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.unibl.etf.mdp.library.event.BookArrivalEvent;
-import org.unibl.etf.mdp.library.event.Event;
-import org.unibl.etf.mdp.library.logger.FileLogger;
-import org.unibl.etf.mdp.library.observer.BookObserver;
+import org.unibl.etf.mdp.common.ApiException;
+import org.unibl.etf.mdp.common.RestClient;
 import org.unibl.etf.mdp.library.properties.AppConfig;
 import org.unibl.etf.mdp.model.Book;
 import org.unibl.etf.mdp.model.BookDto;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+/** The catalogue on the LibraryServer (books in Redis). */
 public class BookService {
-    public static final Logger logger = FileLogger.getLogger(BookService.class.getName());
-    private static AppConfig conf = new AppConfig();
+    private static final AppConfig conf = new AppConfig();
     private static final String BOOKS_URL = conf.getServerBooksUrl();
-    private static final int PREVIEW_LINES = conf.getPreviewLines();
-    private static final String START_MARKER = conf.getStartMarker();
-
+    // The date format of the books API
+    private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd").create();
     private static BookService instance;
-    private final List<BookObserver> observers = new ArrayList<>();
+    private final RestClient api = RestClient.shared();
 
     private BookService() {
     }
@@ -44,91 +33,29 @@ public class BookService {
         return instance;
     }
 
-    private static String readAll(Reader rd) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        int cp;
-        while ((cp = rd.read()) != -1) {
-            sb.append((char) cp);
-        }
-        return sb.toString();
-
+    private static String url(String key) {
+        return BOOKS_URL + URLEncoder.encode(key, StandardCharsets.UTF_8);
     }
 
-    public void addObserver(BookObserver observer) {
-        observers.add(observer);
+    public List<BookDto> getAll() throws IOException {
+        return Arrays.asList(gson.fromJson(ApiException.check(api.get(BOOKS_URL)).body(), BookDto[].class));
     }
 
-    public void removeObserver(BookObserver observer) {
-        observers.remove(observer);
+    /** The full book, text and cover included. */
+    public Book getBook(String key) throws IOException {
+        return gson.fromJson(ApiException.check(api.get(url(key))).body(), Book.class);
     }
 
-    public void notifyBookArrival(List<Book> books) {
-        BookArrivalEvent event = new BookArrivalEvent(books);
-        notifyObservers(event);
+    public void add(Book book) throws IOException {
+        ApiException.check(api.post(BOOKS_URL, gson.toJson(book)));
     }
 
-    private void notifyObservers(Event event) {
-        for (BookObserver observer : observers) {
-            observer.onEvent(event);
-        }
+    /** Text and cover left null are kept by the server. */
+    public void update(String key, Book book) throws IOException {
+        ApiException.check(api.put(url(key), gson.toJson(book)));
     }
 
-    public List<BookDto> getAll() {
-        List<BookDto> books = new ArrayList<>();
-        try (InputStream is = new URL(BOOKS_URL).openStream();
-             InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
-
-            Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd").create();
-            BookDto[] bookArray = gson.fromJson(reader, BookDto[].class);
-            books = Arrays.asList(bookArray);
-
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Failed to fetch books.", e);
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Unexpected error occurred while fetching books.", e);
-        }
-        return books;
+    public void delete(BookDto book) throws IOException {
+        ApiException.check(api.delete(url(book.getKey())));
     }
-
-    private String getPreview(String content) {
-        String[] lines = content.split("\n");
-        StringBuilder result = new StringBuilder();
-        boolean startFound = false;
-        int linesRead = 0;
-
-        for (String line : lines) {
-            if (!startFound) {
-                if (line.contains(START_MARKER)) {
-                    startFound = true;
-                }
-                continue;
-            }
-
-            result.append(line).append("\n");
-            linesRead++;
-            if (linesRead >= PREVIEW_LINES) {
-                break;
-            }
-        }
-        return result.toString();
-
-    }
-
-    public boolean delete(BookDto book) {
-        try {
-            String encodedKey = URLEncoder.encode(book.getKey(), "UTF-8");
-
-            URL url = new URL(BOOKS_URL + encodedKey);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("DELETE");
-
-            int responseCode = conn.getResponseCode();
-            System.out.println(responseCode);
-            return responseCode == HttpURLConnection.HTTP_NO_CONTENT; // 204
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Error deleting book: " + book.getTitle(), e);
-            return false;
-        }
-    }
-
 }

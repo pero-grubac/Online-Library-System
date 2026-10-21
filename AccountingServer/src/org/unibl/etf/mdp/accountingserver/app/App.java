@@ -2,10 +2,10 @@ package org.unibl.etf.mdp.accountingserver.app;
 
 import org.unibl.etf.mdp.accountingserver.logger.FileLogger;
 import org.unibl.etf.mdp.accountingserver.properties.AppConfig;
+import org.unibl.etf.mdp.common.SerialFilter;
 import org.unibl.etf.mdp.service.AccountingService;
 import org.unibl.etf.mdp.service.IAccountingService;
 
-import java.io.File;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
@@ -17,13 +17,8 @@ public class App {
     private static final Logger logger = FileLogger.getLogger(App.class.getName());
 
     public static void main(String[] args) {
-        String securityDir = conf.getSecurityDir();
-        String securityFile = conf.getSecurityFile();
-        String securityPolicy = conf.getSecurityPolicy();
-        System.setProperty(securityPolicy, securityDir + File.separator + securityFile);
-        if (System.getSecurityManager() == null) {
-            System.setSecurityManager(new SecurityManager());
-        }
+        // Only the system's own classes may be deserialized from RMI calls
+        SerialFilter.install();
         try {
             AccountingService service = new AccountingService();
             IAccountingService stub = (IAccountingService) UnicastRemoteObject.exportObject(service, 0);

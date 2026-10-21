@@ -1,132 +1,147 @@
 package org.unibl.etf.mdp.supplier.server;
 
+import org.unibl.etf.mdp.common.JsonChannel;
 import org.unibl.etf.mdp.model.BookDto;
 import org.unibl.etf.mdp.model.Message;
 import org.unibl.etf.mdp.supplier.logger.FileLogger;
 import org.unibl.etf.mdp.supplier.properties.AppConfig;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.InetAddress;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Server implements Runnable {
+/**
+ * The supplier's own TCP server, where the library reads the offer. It is registered with the DiscoveryServer
+ * under the supplier's name and kept registered with a heartbeat.
+ */
+public class Server {
     private static final AppConfig conf = new AppConfig();
     private static final Logger logger = FileLogger.getLogger(Server.class.getName());
-    private static final int DISCOVERY_SERVER_TCP = conf.getDiscoveryServerTCPPort();
-    private static final String HOST = conf.getDefaultHost();
-
-    private static Server instance; // Singleton instance
-
-    private String serverName;
-    private int serverPort;
-    private List<BookDto> books;
-
+    private final String discoveryHost;
+    private final int discoveryPort;
+    private final int heartbeatSeconds;
+    private final String serverName;
+    // Shared with the GUI: books added to the offer are served at once
+    private final List<BookDto> books;
     private ServerSocket serverSocket;
-    private AtomicBoolean running = new AtomicBoolean(false);
+    private ScheduledExecutorService heartbeat;
+    private final AtomicBoolean running = new AtomicBoolean(false);
 
-    private Server(String serverName, List<BookDto> books) { // Private constructor
+    /** Registration refused: another running application already uses this supplier's name. */
+    public static class NameTakenException extends IOException {
+        public NameTakenException(String name) {
+            super(name + " is already running");
+        }
+    }
+
+    public Server(String serverName, List<BookDto> books) {
+        this(serverName, books, conf.getDefaultHost(), conf.getDiscoveryServerTCPPort(), conf.getHeartbeatSeconds());
+    }
+
+    Server(String serverName, List<BookDto> books, String discoveryHost, int discoveryPort, int heartbeatSeconds) {
         this.serverName = serverName;
         this.books = books;
+        this.discoveryHost = discoveryHost;
+        this.discoveryPort = discoveryPort;
+        this.heartbeatSeconds = heartbeatSeconds;
     }
 
-    // Synchronized method to ensure only one instance is created
-    public static synchronized Server getInstance(String serverName, List<BookDto> books) {
-        if (instance == null) {
-            instance = new Server(serverName, books);
-        }
-        return instance;
-    }
-
-    @Override
-    public void run() {
+    /**
+     * Opens the server on a free port and registers it.
+     *
+     * @throws NameTakenException when another application already runs as this supplier
+     * @throws IOException        when the DiscoveryServer cannot be reached
+     */
+    public synchronized void start() throws IOException {
+        serverSocket = new ServerSocket(0);
         try {
-            serverSocket = new ServerSocket(0);
-            this.serverPort = serverSocket.getLocalPort();
-            System.out.println(serverName + " server running on port: " + serverPort);
-
-            if (!sendDiscoveryMessage()) {
-                System.out.println("Failed to register with Discovery Server. Exiting...");
-                return;
+            String answer = sendDiscoveryMessage(new Message(conf.getDiscoveryMsg(), serverName, getServerPort()));
+            if (conf.getTakenMsg().equals(answer)) {
+                throw new NameTakenException(serverName);
             }
+            if (!conf.getOkMsg().equals(answer)) {
+                throw new IOException("Unexpected answer from the Discovery Server: " + answer);
+            }
+        } catch (IOException e) {
+            serverSocket.close();
+            throw e;
+        }
+        running.set(true);
+        startHeartbeat();
+        Thread acceptor = new Thread(this::acceptLoop, serverName + "-server");
+        acceptor.setDaemon(true);
+        acceptor.start();
+        logger.info(serverName + " server running on port: " + getServerPort());
+    }
 
-            running.set(true);
-
-            while (running.get()) {
-                try {
-                    Socket sock = serverSocket.accept();
-                    new ServerThread(sock, serverName, books);
-                } catch (Exception e) {
-                    if (!running.get()) {
-                        System.out.println("Server is shutting down...");
-                    } else {
-                        logger.log(Level.SEVERE, "Error accepting connection", e);
-                    }
+    private void acceptLoop() {
+        while (running.get()) {
+            try {
+                Socket sock = serverSocket.accept();
+                new ServerThread(sock, serverName, books);
+            } catch (Exception e) {
+                if (running.get()) {
+                    logger.log(Level.SEVERE, "Error accepting connection", e);
                 }
             }
-        } catch (Exception ex) {
-            logger.log(Level.SEVERE, "An error occurred in the server application", ex);
-        } finally {
-            cleanup();
         }
     }
 
-    public void shutdown() {
+    public int getServerPort() {
+        return serverSocket.getLocalPort();
+    }
+
+    public synchronized void shutdown() {
+        if (!running.getAndSet(false)) {
+            return;
+        }
+        if (heartbeat != null) {
+            heartbeat.shutdownNow();
+        }
         try {
-            running.set(false);
-            if (serverSocket != null && !serverSocket.isClosed()) {
-                serverSocket.close();
-            }
-            instance = null;
-            System.out.println(serverName + " server has been stopped.");
-        } catch (Exception e) {
+            // Leave the registry now instead of waiting for the TTL
+            sendDiscoveryMessage(new Message(conf.getUnregisterMsg(), serverName, null, Message.ENTITY_SERVER));
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "Could not unregister from the Discovery Server", e);
+        }
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
             logger.log(Level.SEVERE, "Error during server shutdown", e);
         }
+        logger.info(serverName + " server has been stopped.");
     }
 
-    private boolean sendDiscoveryMessage() {
-        String discoveryMsg = conf.getDiscoveryMsg();
-        String okMsg = conf.getOkMsg();
-        String endMsg = conf.getEndMsg();
-
-        Message msg = new Message(discoveryMsg, serverName, String.valueOf(serverPort));
-
-        try (Socket discoverySocket = new Socket(InetAddress.getByName(HOST), DISCOVERY_SERVER_TCP);
-             ObjectOutputStream out = new ObjectOutputStream(discoverySocket.getOutputStream());
-             ObjectInputStream in = new ObjectInputStream(discoverySocket.getInputStream())) {
-
-            out.writeObject(msg);
-            out.flush();
-
-            Message response = (Message) in.readObject();
-            if (okMsg.equals(response.getType())) {
-                System.out.println("Received acknowledgment from Discovery Server: " + response);
-                msg = new Message(endMsg, serverName);
-                out.writeObject(msg);
-                out.flush();
-                return true;
-            } else {
-                System.out.println("Unexpected response from Discovery Server: " + response);
-                return false;
+    /** Re-registers periodically; the DiscoveryServer drops suppliers that stop doing so. */
+    private void startHeartbeat() {
+        heartbeat = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, serverName + "-heartbeat");
+            t.setDaemon(true);
+            return t;
+        });
+        Message renewal = new Message(conf.getDiscoveryMsg(), serverName, getServerPort());
+        heartbeat.scheduleAtFixedRate(() -> {
+            try {
+                sendDiscoveryMessage(renewal);
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "Heartbeat to the Discovery Server failed", e);
             }
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Failed to send discovery message", e);
-            return false;
-        }
+        }, heartbeatSeconds, heartbeatSeconds, TimeUnit.SECONDS);
     }
 
-    private void cleanup() {
-        try {
-            if (serverSocket != null && !serverSocket.isClosed()) {
-                serverSocket.close();
-            }
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error during cleanup", e);
+    /** @return the type of the answer */
+    private String sendDiscoveryMessage(Message msg) throws IOException {
+        try (JsonChannel channel = JsonChannel.connect(discoveryHost, discoveryPort)) {
+            Message response = channel.request(msg);
+            channel.send(new Message(conf.getEndMsg(), serverName));
+            return response.getType();
         }
     }
 }

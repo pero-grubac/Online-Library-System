@@ -6,16 +6,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
+/** Private conversations by member; written by the network threads, read by the GUI. */
 public class ChatHistory {
     private static ChatHistory instance;
-    private Map<String, List<ChatMessage>> conversations;
-    private List<ChatListener> listeners;
+    private final Map<String, List<ChatMessage>> conversations = new HashMap<>();
+    private final List<ChatListener> listeners = new CopyOnWriteArrayList<>();
 
     private ChatHistory() {
-        conversations = new HashMap<>();
-        listeners = new ArrayList<>();
-
     }
 
     public static synchronized ChatHistory getInstance() {
@@ -25,25 +24,31 @@ public class ChatHistory {
     }
 
     public void addMessage(String username, ChatMessage message) {
-        conversations.computeIfAbsent(username, k -> new ArrayList<>()).add(message);
-        notifyListeners(username);
+        synchronized (conversations) {
+            conversations.computeIfAbsent(username, k -> new ArrayList<>()).add(message);
+        }
+        for (ChatListener listener : listeners) {
+            listener.onNewMessage(username);
+        }
     }
 
     public List<ChatMessage> getMessages(String username) {
-        return conversations.getOrDefault(username, new ArrayList<>());
+        synchronized (conversations) {
+            return new ArrayList<>(conversations.getOrDefault(username, List.of()));
+        }
     }
 
     public List<String> getActiveConversations() {
-        return new ArrayList<>(conversations.keySet());
+        synchronized (conversations) {
+            return new ArrayList<>(conversations.keySet());
+        }
     }
 
     public void addListener(ChatListener listener) {
         listeners.add(listener);
     }
 
-    private void notifyListeners(String username) {
-        for (ChatListener listener : listeners) {
-            listener.onNewMessage(username);
-        }
+    public void removeListener(ChatListener listener) {
+        listeners.remove(listener);
     }
 }

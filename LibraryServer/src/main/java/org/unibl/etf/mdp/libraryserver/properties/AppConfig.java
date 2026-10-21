@@ -3,6 +3,8 @@ package org.unibl.etf.mdp.libraryserver.properties;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AppConfig {
     private Properties properties;
@@ -16,31 +18,27 @@ public class AppConfig {
         try (InputStream input = getClass().getClassLoader()
                 .getResourceAsStream("org/unibl/etf/mdp/libraryserver/properties/app.properties")) {
             if (input == null) {
-                System.out.println("Sorry, unable to find app.properties");
-                return;
+                throw new IllegalStateException("app.properties is missing from the classpath");
             }
             properties.load(input);
         } catch (IOException ex) {
-            ex.printStackTrace();
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            // Without its configuration the application cannot work at all
+            Logger.getLogger(AppConfig.class.getName()).log(Level.SEVERE, "Cannot read app.properties", ex);
+            throw new IllegalStateException("Cannot read app.properties", ex);
         }
     }
 
+    // An environment variable with the same name wins, so secrets (MAIL_PASSWORD...) stay out of the file
     private String getProperty(String key) {
+        String env = System.getenv(key);
+        if (env != null && !env.isBlank()) {
+            return env;
+        }
         return properties.getProperty(key);
     }
 
-    private double getDoubleProperty(String key) {
-        return Double.parseDouble(properties.getProperty(key));
-    }
-
     private Integer getIntegerProperty(String key) {
-        return Integer.parseInt(properties.getProperty(key));
-    }
-
-    public String getImageExt() {
-        return getProperty("IMAGE_EXT");
+        return Integer.parseInt(getProperty(key));
     }
 
     public String getBookExt() {
@@ -79,10 +77,6 @@ public class AppConfig {
         return getProperty("BOOK_KEY_PREFIX");
     }
 
-    public String getImageKeySufix() {
-        return getProperty("IMAGE_KEY_SUFIX");
-    }
-
     public int getPreviewLines() {
         return getIntegerProperty("PREVIEW_LINES");
     }
@@ -107,15 +101,27 @@ public class AppConfig {
         return getProperty("MAIL_PASSWORD");
     }
 
-    public String getKeyStorePath() {
-        return getProperty("KEY_STORE_PATH");
+    public String getAdminUsername() {
+        return getProperty("ADMIN_USERNAME");
     }
 
-    public String getKeyStorePass() {
-        return getProperty("KEY_STORE_PASSWORD");
+    public String getAdminPassword() {
+        return getProperty("ADMIN_PASSWORD");
     }
 
-    public String getZipFile() {
-        return getProperty("ZIP_FILE");
+    public String getJwtSecret() {
+        return getProperty("JWT_SECRET");
+    }
+
+    public int getTokenTtlMinutes() {
+        return getIntegerProperty("TOKEN_TTL_MINUTES");
+    }
+
+    public int getPasswordHashIterations() {
+        return getIntegerProperty("PASSWORD_HASH_ITERATIONS");
+    }
+
+    public String getReservationKeyPrefix() {
+        return getProperty("RESERVATION_KEY_PREFIX");
     }
 }

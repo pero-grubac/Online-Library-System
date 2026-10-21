@@ -10,12 +10,14 @@ import java.util.concurrent.TimeoutException;
 public class ConnectionFactoryUtil {
     private static final AppConfig conf = new AppConfig();
     private static final String HOST = conf.getDefaultHost();
+    private static final int PORT = conf.getRabbitMQPort();
     private static final String USER = conf.getRabbitMQUser();
     private static final String PASS = conf.getRabbitMQPass();
 
     public static Connection createConnection() throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(HOST);
+        factory.setPort(PORT);
         factory.setUsername(USER);
         factory.setPassword(PASS);
         return factory.newConnection();

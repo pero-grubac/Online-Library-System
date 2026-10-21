@@ -3,6 +3,8 @@ package org.unibl.etf.mdp.supplierserver.properties;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AppConfig {
     private Properties properties;
@@ -16,23 +18,18 @@ public class AppConfig {
         try (InputStream input = getClass().getClassLoader()
                 .getResourceAsStream("org/unibl/etf/mdp/supplierserver/properties/app.properties")) {
             if (input == null) {
-                System.out.println("Sorry, unable to find app.properties");
-                return;
+                throw new IllegalStateException("app.properties is missing from the classpath");
             }
             properties.load(input);
         } catch (IOException ex) {
-            ex.printStackTrace();
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            // Without its configuration the application cannot work at all
+            Logger.getLogger(AppConfig.class.getName()).log(Level.SEVERE, "Cannot read app.properties", ex);
+            throw new IllegalStateException("Cannot read app.properties", ex);
         }
     }
 
     private String getProperty(String key) {
         return properties.getProperty(key);
-    }
-
-    private double getDoubleProperty(String key) {
-        return Double.parseDouble(properties.getProperty(key));
     }
 
     private Integer getIntegerProperty(String key) {
@@ -49,18 +46,6 @@ public class AppConfig {
 
     public int getTCPPort() {
         return getIntegerProperty("TCP_PORT");
-    }
-
-    public int getRedisPort() {
-        return getIntegerProperty("REDIS_PORT");
-    }
-
-    public String getBookStartUrl() {
-        return getProperty("BOOK_URL_START");
-    }
-
-    public String getRedisHost() {
-        return getProperty("REDIS_HOST");
     }
 
     public String getSuppliersDir() {
@@ -83,10 +68,6 @@ public class AppConfig {
         return getProperty("END_MSG");
     }
 
-    public String getDefaultHost() {
-        return getProperty("HOST");
-    }
-
     public int getPreviewLines() {
         return getIntegerProperty("PREVIEW_LINES");
     }
@@ -101,5 +82,21 @@ public class AppConfig {
 
     public String getImageUrlEnd() {
         return getProperty("IMAGE_URL_END");
+    }
+
+    public String getLinksFile() {
+        return getProperty("LINKS_FILE");
+    }
+
+    public String getLoadLinksMsg() {
+        return getProperty("LOAD_LINKS");
+    }
+
+    public String getAddBookMsg() {
+        return getProperty("ADD_BOOK");
+    }
+
+    public String getErrorMsg() {
+        return getProperty("ERROR");
     }
 }

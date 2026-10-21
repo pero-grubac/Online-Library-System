@@ -3,6 +3,8 @@ package org.unibl.etf.mdp.discoveryserver.properties;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AppConfig {
     private Properties properties;
@@ -16,23 +18,18 @@ public class AppConfig {
         try (InputStream input = getClass().getClassLoader()
                 .getResourceAsStream("org/unibl/etf/mdp/discoveryserver/properties/app.properties")) {
             if (input == null) {
-                System.out.println("Sorry, unable to find app.properties");
-                return;
+                throw new IllegalStateException("app.properties is missing from the classpath");
             }
             properties.load(input);
         } catch (IOException ex) {
-            ex.printStackTrace();
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            // Without its configuration the application cannot work at all
+            Logger.getLogger(AppConfig.class.getName()).log(Level.SEVERE, "Cannot read app.properties", ex);
+            throw new IllegalStateException("Cannot read app.properties", ex);
         }
     }
 
     private String getProperty(String key) {
         return properties.getProperty(key);
-    }
-
-    private double getDoubleProperty(String key) {
-        return Double.parseDouble(properties.getProperty(key));
     }
 
     private Integer getIntegerProperty(String key) {
@@ -75,4 +72,16 @@ public class AppConfig {
         return getProperty("DISCOVER_USER");
     }
 
+
+    public String getUnregisterMsg() {
+        return getProperty("UNREGISTER");
+    }
+
+    public int getRegistrationTtlSeconds() {
+        return getIntegerProperty("REGISTRATION_TTL_SECONDS");
+    }
+
+    public String getTakenMsg() {
+        return getProperty("TAKEN");
+    }
 }

@@ -2,27 +2,35 @@ package org.unibl.etf.mdp.library.mq;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.MessageProperties;
+import org.unibl.etf.mdp.common.Json;
 import org.unibl.etf.mdp.library.properties.AppConfig;
 import org.unibl.etf.mdp.model.Message;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * Sends orders to a supplier's durable queue as persistent JSON messages,
+ * so an order survives a supplier that is offline and a broker restart.
+ */
 public class DirectSender {
     private static final AppConfig conf = new AppConfig();
     private static final String EXCHANGE_NAME = conf.getExchangeName();
     private static final String DIRECT = conf.getDirect();
-
+    private static final String QUEUE_PREFIX = conf.getQueuePrefix();
     private static DirectSender instance;
     private Channel channel;
     private Connection connection;
 
     private DirectSender() throws IOException, TimeoutException {
-        connection = ConnectionFactoryUtil.createConnection();
+        this(ConnectionFactoryUtil.createConnection());
+    }
+
+    public DirectSender(Connection connection) throws IOException {
+        this.connection = connection;
         channel = connection.createChannel();
-        channel.exchangeDeclare(EXCHANGE_NAME, DIRECT);
+        channel.exchangeDeclare(EXCHANGE_NAME, DIRECT, true);
     }
 
     public static synchronized DirectSender getInstance() throws Exception {
@@ -33,26 +41,23 @@ public class DirectSender {
     }
 
     public void sendMessage(String routingKey, Message message) throws IOException {
-        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-        ObjectOutputStream objOut = new ObjectOutputStream(byteOut);
-        objOut.writeObject(message);
-        objOut.flush();
+        // Declared here too, so the order is kept even if the supplier has never been started
+        String queueName = QUEUE_PREFIX + routingKey;
+        channel.queueDeclare(queueName, true, false, false, null);
+        channel.queueBind(queueName, EXCHANGE_NAME, routingKey);
 
-        channel.basicPublish(EXCHANGE_NAME, routingKey, null, byteOut.toByteArray());
-        System.out.println("Sent message: " + message + " to routing key: " + routingKey);
-
+        channel.basicPublish(EXCHANGE_NAME, routingKey, MessageProperties.PERSISTENT_TEXT_PLAIN, Json.toBytes(message));
     }
 
     public void shutdown() throws IOException, TimeoutException {
-        if (channel != null) {
+        if (channel != null && channel.isOpen()) {
             channel.close();
         }
-        if (connection != null) {
+        if (connection != null && connection.isOpen()) {
             connection.close();
         }
         if (instance != null) {
             instance = null;
         }
-        System.out.println("DirectSender shutdown complete.");
     }
 }

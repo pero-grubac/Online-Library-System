@@ -1,16 +1,16 @@
 package org.unibl.etf.mdp.user.service;
 
 import com.google.gson.Gson;
+import org.unibl.etf.mdp.common.ApiException;
+import org.unibl.etf.mdp.common.RestClient;
 import org.unibl.etf.mdp.model.User;
 import org.unibl.etf.mdp.user.logger.FileLogger;
 import org.unibl.etf.mdp.user.properties.AppConfig;
 
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 import java.util.logging.Logger;
 
+/** Login and registration on the LibraryServer. */
 public class LibraryService {
     private static final Logger logger = FileLogger.getLogger(LibraryService.class.getName());
     private static AppConfig conf = new AppConfig();
@@ -26,59 +26,25 @@ public class LibraryService {
         return instance;
     }
 
-    public boolean login(String username, String password) {
-        try {
-            URL url = new URL(USERS_URL + "login");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setDoOutput(true);
-
-            String jsonInputString = String.format("{\"username\":\"%s\", \"password\":\"%s\"}", username, password);
-            try (OutputStream os = conn.getOutputStream()) {
-                byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
-                os.write(input, 0, input.length);
-            }
-
-            int responseCode = conn.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                return true;
-            } else if (responseCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                logger.warning("Invalid credentials for user: " + username);
-                return false;
-            } else {
-                logger.warning("Unexpected response code: " + responseCode);
-                return false;
-            }
-        } catch (Exception e) {
-            logger.severe("Error during login: " + e.getMessage());
-            e.printStackTrace();
-            return false;
+    /**
+     * Logs in; the session token is then sent with every request of this application.
+     *
+     * @throws ApiException with the server's reason, e.g. that the account still waits for approval
+     */
+    public void login(String username, String password) throws IOException {
+        RestClient.Result result = RestClient.shared().login(USERS_URL + "login", username, password);
+        if (!result.ok()) {
+            logger.warning("Login of " + username + " refused with HTTP " + result.status());
+            throw new ApiException(result);
         }
     }
 
-    public boolean register(User user) {
-        try {
-            URL url = new URL(USERS_URL);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setDoOutput(true);
-
-            String jsonInputString = new Gson().toJson(user);
-
-            try (OutputStream os = conn.getOutputStream()) {
-                byte[] input = jsonInputString.getBytes("utf-8");
-                os.write(input, 0, input.length);
-            }
-
-            int responseCode = conn.getResponseCode();
-            return responseCode == HttpURLConnection.HTTP_CREATED;
-        } catch (Exception e) {
-            logger.severe("Error during registration: " + e.getMessage());
-            return false;
+    /** @throws ApiException with the server's reason, e.g. a username that is taken */
+    public void register(User user) throws IOException {
+        RestClient.Result result = RestClient.shared().post(USERS_URL, new Gson().toJson(user));
+        if (result.status() == 409) {
+            throw new IOException("The username \"" + user.getUsername() + "\" is already taken.");
         }
+        ApiException.check(result);
     }
-
 }

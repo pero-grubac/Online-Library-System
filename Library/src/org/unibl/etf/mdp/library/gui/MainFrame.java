@@ -1,165 +1,120 @@
 package org.unibl.etf.mdp.library.gui;
 
+import org.unibl.etf.mdp.common.ui.BookForm;
+import org.unibl.etf.mdp.common.ui.BookViews;
+import org.unibl.etf.mdp.common.ui.Tasks;
 import org.unibl.etf.mdp.library.services.BookService;
+import org.unibl.etf.mdp.model.Book;
 import org.unibl.etf.mdp.model.BookDto;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
+/** The library's catalogue (CRUD) and the way to every other part of the application. */
 public class MainFrame extends GeneralFrame {
-
     private static final long serialVersionUID = 1L;
-    private static final Map<String, JFrame> openForms = new HashMap<>();
-    private JPanel bookListPanel;
+    private final Map<String, JFrame> openForms = new HashMap<>();
+    private final Data data;
+    private final JPanel bookListPanel = new JPanel();
+    private final JLabel status = new JLabel(" ");
+    private final JButton noticesButton = new JButton("Notices");
 
-    public MainFrame() {
-        super("Library");
-        setSize(800, 600);
+    public MainFrame(Data data) {
+        super(data.getUsername());
+        this.data = data;
+        setSize(960, 680);
         setLayout(new BorderLayout());
 
-        JPanel topPanel = new JPanel();
-
-        JButton refreshButton = new JButton("Refresh");
-        refreshButton.addActionListener(e -> loadBooks());
-        topPanel.add(refreshButton);
-
-        JButton chooseSupplierButton = new JButton("Choose Supplier");
-        chooseSupplierButton.addActionListener(e -> new SuppliersFrame().setVisible(true));
-        topPanel.add(chooseSupplierButton);
-
-        JButton manageUsersButton = new JButton("Manage Users");
-        manageUsersButton.addActionListener(e -> new UserFrame().setVisible(true));
-        topPanel.add(manageUsersButton);
-
-        JButton btn2 = new JButton("Group chat");
-        btn2.addActionListener(
-                e -> openForm("GroupChatForm", () -> new GroupChatForm(Data.getUsername())));
-
-        topPanel.add(btn2);
-
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        topPanel.add(button("Refresh", this::loadBooks));
+        topPanel.add(button("Add book", this::addBook));
+        topPanel.add(button("Members", () -> open("members", UserFrame::new)));
+        topPanel.add(button("Reservations", () -> open("reservations", ReservationsFrame::new)));
+        topPanel.add(button("Order from supplier", () -> open("suppliers", SuppliersFrame::new)));
+        topPanel.add(button("Proposals", () -> open("proposals", () -> new ProposalsFrame(data))));
+        topPanel.add(button("Group chat", () -> open("chat", () -> new GroupChatForm(data))));
+        noticesButton.addActionListener(e -> open("notices", () -> new NoticesFrame(data.getDeliveries())));
+        topPanel.add(noticesButton);
         add(topPanel, BorderLayout.NORTH);
 
-        bookListPanel = new JPanel();
         bookListPanel.setLayout(new BoxLayout(bookListPanel, BoxLayout.Y_AXIS));
         JScrollPane scrollPane = new JScrollPane(bookListPanel);
-        scrollPane.setBorder(new EmptyBorder(10, 10, 10, 10));
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         add(scrollPane, BorderLayout.CENTER);
+        status.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+        add(status, BorderLayout.SOUTH);
 
+        // Books approved by a supplier appear without pressing Refresh
+        data.getDeliveries().onCatalogueChange(() -> SwingUtilities.invokeLater(this::loadBooks));
+        data.getDeliveries().onNotice(() -> SwingUtilities.invokeLater(() -> {
+            noticesButton.setText("Notices (" + data.getDeliveries().getNotices().size() + ")");
+            status.setText("New notice: " + data.getDeliveries().getNotices().get(0).lines().findFirst().orElse(""));
+        }));
         loadBooks();
     }
 
+    private static JButton button(String text, Runnable action) {
+        JButton button = new JButton(text);
+        button.addActionListener(e -> action.run());
+        return button;
+    }
+
     private void loadBooks() {
-        List<BookDto> books = BookService.getInstance().getAll();
+        status.setText("Loading the catalogue...");
+        Tasks.load(this, "The catalogue could not be loaded.", () -> BookService.getInstance().getAll(), this::show);
+    }
+
+    private void show(List<BookDto> books) {
         bookListPanel.removeAll();
-
         for (BookDto book : books) {
-            bookListPanel.add(createBookPanel(book));
+            bookListPanel.add(BookViews.bookRow(book,
+                    button("Details", () -> BookViews.showDetails(this, book)),
+                    button("Edit", () -> editBook(book)),
+                    button("Delete", () -> deleteBook(book))));
         }
-
         bookListPanel.revalidate();
         bookListPanel.repaint();
+        status.setText(BookViews.books(books.size()) + " in the catalogue");
     }
 
-    private JPanel createBookPanel(BookDto book) {
-        JPanel bookPanel = new JPanel();
-        bookPanel.setLayout(new BorderLayout());
-        bookPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        bookPanel.setMaximumSize(new Dimension(700, 150));
-
-        // Slika knjige
-        JLabel coverLabel = new JLabel();
-        if (book.getCoverImageBytes() != null) {
-            BufferedImage bi = null;
-            try (ByteArrayInputStream bais = new ByteArrayInputStream(book.getCoverImageBytes())) {
-                bi = ImageIO.read(bais);
-            } catch (Exception e) {
-                System.err.println("Error while converting bytes to cover image: " + e.getMessage());
-            }
-            if (bi != null) {
-                ImageIcon coverImage = new ImageIcon(bi);
-                Image scaledImage = coverImage.getImage().getScaledInstance(100, 150, Image.SCALE_SMOOTH);
-                coverLabel.setIcon(new ImageIcon(scaledImage));
-            }
-        } else {
-            coverLabel.setText("No Image");
+    private void addBook() {
+        Book book = new BookForm(this, "Add a book", null, true, true).showDialog();
+        if (book != null) {
+            Tasks.run(this, "The book was not added.", () -> BookService.getInstance().add(book), this::loadBooks);
         }
-
-        // Informacije o knjizi
-        JPanel attributesPanel = new JPanel();
-        attributesPanel.setLayout(new BoxLayout(attributesPanel, BoxLayout.Y_AXIS));
-        attributesPanel.add(new JLabel("Author: " + book.getAuthor()));
-        attributesPanel.add(new JLabel("Title: " + book.getTitle()));
-        attributesPanel.add(new JLabel("Language: " + book.getLanguage()));
-        attributesPanel.add(new JLabel("Release Date: " + book.getFormatedDate()));
-
-        // Dugme za pregled
-        JButton previewButton = new JButton("Preview");
-        previewButton.addActionListener(e -> showPreviewDialog(book.getPreview()));
-
-        JButton deleteButton = new JButton("Delete");
-        deleteButton.addActionListener(e -> deleteBook(book));
-
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.add(previewButton);
-        buttonPanel.add(deleteButton);
-
-        bookPanel.add(coverLabel, BorderLayout.WEST);
-        bookPanel.add(attributesPanel, BorderLayout.CENTER);
-        bookPanel.add(buttonPanel, BorderLayout.EAST);
-
-        return bookPanel;
     }
 
-    private void showPreviewDialog(String preview) {
-        JTextArea previewTextArea = new JTextArea(preview);
-        previewTextArea.setLineWrap(true);
-        previewTextArea.setWrapStyleWord(true);
-        previewTextArea.setEditable(false);
-
-        JScrollPane scrollPane = new JScrollPane(previewTextArea);
-        scrollPane.setPreferredSize(new Dimension(600, 400));
-
-        JOptionPane.showMessageDialog(this, scrollPane, "Book Preview", JOptionPane.INFORMATION_MESSAGE);
+    private void editBook(BookDto summary) {
+        Tasks.load(this, "The book could not be loaded.", () -> BookService.getInstance().getBook(summary.getKey()),
+                stored -> {
+                    Book changes = new BookForm(this, "Edit book", stored, false, true).showDialog();
+                    if (changes != null) {
+                        Tasks.run(this, "The book was not saved.",
+                                () -> BookService.getInstance().update(summary.getKey(), changes), this::loadBooks);
+                    }
+                });
     }
 
     private void deleteBook(BookDto book) {
-        int confirm = JOptionPane.showConfirmDialog(this,
-                "Are you sure you want to delete the book \"" + book.getTitle() + "\"?", "Confirm Delete",
-                JOptionPane.YES_NO_OPTION);
-
+        int confirm = JOptionPane.showConfirmDialog(this, "Delete \"" + book.getTitle() + "\" from the catalogue?",
+                "Confirm Delete", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
-            boolean deleted = BookService.getInstance().delete(book);
-            if (deleted) {
-                JOptionPane.showMessageDialog(this, "Book deleted successfully.", "Success",
-                        JOptionPane.INFORMATION_MESSAGE);
-                loadBooks();
-            } else {
-                JOptionPane.showMessageDialog(this, "Failed to delete the book.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
+            Tasks.run(this, "The book was not deleted.", () -> BookService.getInstance().delete(book), this::loadBooks);
         }
     }
 
-    private void openForm(String formKey, FormCreator creator) {
-        JFrame existingForm = openForms.get(formKey);
-        if (existingForm == null || !existingForm.isVisible()) {
-            JFrame newForm = creator.create();
-            openForms.put(formKey, newForm);
-            newForm.setVisible(true);
-        } else {
-            existingForm.toFront();
+    private void open(String key, Supplier<JFrame> creator) {
+        JFrame existing = openForms.get(key);
+        if (existing == null || !existing.isDisplayable()) {
+            existing = creator.get();
+            existing.setLocationRelativeTo(this);
+            openForms.put(key, existing);
         }
+        existing.setVisible(true);
+        existing.toFront();
     }
-
-    @FunctionalInterface
-    interface FormCreator {
-        JFrame create();
-    }
-
 }

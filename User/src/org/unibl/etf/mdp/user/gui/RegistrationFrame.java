@@ -1,5 +1,6 @@
 package org.unibl.etf.mdp.user.gui;
 
+import org.unibl.etf.mdp.common.ui.Tasks;
 import org.unibl.etf.mdp.model.User;
 import org.unibl.etf.mdp.user.service.LibraryService;
 
@@ -69,15 +70,14 @@ public class RegistrationFrame extends GeneralFrame {
 
             User user = new User(0, firstName, lastName, address, email, username, password);
 
-            boolean registered = service.register(user);
-            if (registered) {
-                JOptionPane.showMessageDialog(this, "Registration successful!", "Success",
-                        JOptionPane.INFORMATION_MESSAGE);
+            // The server's reason is shown, e.g. that the username is taken
+            Tasks.run(this, "Registration failed.", () -> service.register(user), () -> {
+                JOptionPane.showMessageDialog(this,
+                        "Registration sent. You can log in as soon as the library approves your account.",
+                        "Success", JOptionPane.INFORMATION_MESSAGE);
                 dispose();
                 new LoginFrame().setVisible(true);
-            } else {
-                JOptionPane.showMessageDialog(this, "Registration failed!", "Error", JOptionPane.ERROR_MESSAGE);
-            }
+            });
         });
 
         loginButton.addActionListener(e -> {

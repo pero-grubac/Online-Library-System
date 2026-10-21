@@ -2,58 +2,64 @@ package org.unibl.etf.mdp.service;
 
 import com.google.gson.Gson;
 import org.unibl.etf.mdp.accountingserver.logger.FileLogger;
+import org.unibl.etf.mdp.accountingserver.properties.AppConfig;
+import org.unibl.etf.mdp.common.Json;
 import org.unibl.etf.mdp.model.Invoice;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.rmi.RemoteException;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class AccountingService implements IAccountingService {
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+    private static final AppConfig conf = new AppConfig();
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(conf.getInvoiceDatePattern());
     private static final Logger logger = FileLogger.getLogger(AccountingService.class.getName());
-    Gson gson = new Gson();
+    // Knows java.time, which plain Gson cannot reflect into on Java 17+
+    private final Gson gson = Json.gson();
+    private final Path invoicesDir;
+    private final BigDecimal vatRate;
 
     public AccountingService() throws RemoteException {
+        this(Paths.get(conf.getInvoicesDir()), new BigDecimal(conf.getVatRate()));
+    }
+
+    public AccountingService(Path invoicesDir, BigDecimal vatRate) throws RemoteException {
         super();
+        this.invoicesDir = invoicesDir;
+        this.vatRate = vatRate;
     }
 
     @Override
     public Invoice addInvoice(Invoice invoice, String username) throws RemoteException {
-        double vat = invoice.getTotalPrice() * 0.17;
-        BigDecimal vatRounded = BigDecimal.valueOf(vat).setScale(2, RoundingMode.HALF_UP);
-        invoice.setVAT(vatRounded.doubleValue());
-        saveInvoice(invoice, username);
+        BigDecimal vat = BigDecimal.valueOf(invoice.getTotalPrice()).multiply(vatRate).setScale(2, RoundingMode.HALF_UP);
+        invoice.setVAT(vat.doubleValue());
+        try {
+            saveInvoice(invoice, username);
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, "Could not save the invoice of " + username, ex);
+            // The supplier must know the invoice was not booked
+            throw new RemoteException("The invoice could not be saved", ex);
+        }
         return invoice;
     }
 
-    private void saveInvoice(Invoice invoice, String supplierName) {
-        try {
-            String date = invoice.getDate().format(formatter);
-            String fileName = date + "-" + invoice.hashCode() + ".json";
-            Path directoryPath = Paths.get("suppliers", supplierName);
-            Path filePath = directoryPath.resolve(fileName);
-
-            if (Files.notExists(directoryPath)) {
-                Files.createDirectories(directoryPath);
-            }
-            // So the invoice is cleaner
-            invoice.getBooks().stream().forEach(b -> b.setCoverImageBase64(null));
-            String jsonContent = gson.toJson(invoice);
-            Files.write(filePath, jsonContent.getBytes(), StandardOpenOption.CREATE);
-
-            System.out.println("Invoice saved as JSON at: " + filePath);
-        } catch (IOException ex) {
-            logger.log(Level.SEVERE, "An error occurred in the server application", ex);
-        } catch (Exception ex) {
-            logger.log(Level.SEVERE, "An error occurred in the server application", ex);
-        }
+    private void saveInvoice(Invoice invoice, String supplierName) throws IOException {
+        Path directoryPath = invoicesDir.resolve(supplierName);
+        Files.createDirectories(directoryPath);
+        // A random part keeps two invoices of the same day apart
+        String fileName = invoice.getDate().format(formatter) + "-" + UUID.randomUUID() + ".json";
+        Path filePath = directoryPath.resolve(fileName);
+        Files.writeString(filePath, gson.toJson(invoice), StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
+        logger.info("Invoice saved as JSON at: " + filePath);
     }
 }

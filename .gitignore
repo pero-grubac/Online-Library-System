@@ -1,10 +1,25 @@
 **/bin/
 **/git/
 **/log/
-**/suppliers/
 **/build/
 **/users/
 **/mail/
 **/keystore.jks
 **/*.class
 **/out/
+**/target/
+.env
+
+# Dependencies and build outputs: Maven downloads and builds them
+*.jar
+*.war
+/apache-tomcat-*
+LibraryServer/war/
+LibraryServer/sources.txt
+
+# IDE metadata: open the folder in IntelliJ and choose "Load Maven Project"
+.idea/
+*.iml
+.classpath
+.project
+.settings/
