@@ -1,0 +1,6 @@
+**
+!pom.xml
+!*/pom.xml
+!Common/src/**
+!LibraryServer/src/**
+LibraryServer/src/main/webapp/WEB-INF/lib
