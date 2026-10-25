@@ -15,7 +15,7 @@
 
 **A distributed library: staff, members and book suppliers in seven Java applications that talk over REST, TCP sockets, TLS, UDP multicast, RabbitMQ and RMI.**
 
-<img src="readme%20assets/library-ordering.gif" alt="Library application: browsing a supplier's offer, ordering books with quantities, the books arriving in the catalogue and the invoice with VAT in the notices" width="900">
+<img src="readme%20assets/library-ordering.gif" alt="Library application: choosing the online supplier, ordering books with quantities from its offer, the delivered books in the catalogue and the supplier's invoice with VAT in the notices" width="900">
 
 </div>
 
@@ -54,19 +54,19 @@ Every communication technology of the course is used for the job it fits best: R
 <details open>
 <summary><b>Catalogue</b>: add a book with cover and text, details, edit, delete</summary>
 <br>
-<img src="readme%20assets/library-catalogue.gif" alt="Library catalogue: adding a book with a cover and a text file, opening its details, editing and deleting a book" width="800">
+<img src="readme%20assets/library-catalogue.gif" alt="Library catalogue: adding The Time Machine with a cover and a text file, its details with the text preview, editing the title and deleting the book" width="800">
 </details>
 
 <details>
 <summary><b>Members</b>: status filter, approve, reject, block, add, edit, delete</summary>
 <br>
-<img src="readme%20assets/library-members.gif" alt="Library members: filtering by status, approving and rejecting registrations, blocking, adding, editing and deleting an account" width="800">
+<img src="readme%20assets/library-members.gif" alt="Library members: the pending filter, approving and rejecting registrations, blocking a member, adding a member who is active at once and deleting an account" width="800">
 </details>
 
 <details>
 <summary><b>Reservations, proposals and group chat</b></summary>
 <br>
-<img src="readme%20assets/library-community.gif" alt="Library: confirming and rejecting reservations, answering members' book proposals and replying in the group chat" width="800">
+<img src="readme%20assets/library-community.gif" alt="Library: confirming and rejecting members' reservations, answering two book proposals and replying in the group chat" width="800">
 </details>
 
 ### 👤 Member
@@ -107,13 +107,13 @@ Every communication technology of the course is used for the job it fits best: R
 <details open>
 <summary><b>Offer</b>: books from <code>linkovi.txt</code>, details, a book entered by hand, a book from a link, reload</summary>
 <br>
-<img src="readme%20assets/supplier-offer.gif" alt="Supplier: login, the offer downloaded from Project Gutenberg, book details, adding a book by hand and from a link, reloading the offer" width="700">
+<img src="readme%20assets/supplier-offer.gif" alt="Supplier: the offer downloaded from Project Gutenberg book by book, book details, adding a book by hand with a cover and a text file, and adding a book from a Gutenberg link" width="700">
 </details>
 
 <details>
 <summary><b>Requests</b>: approve an order (invoice with VAT) or reject it</summary>
 <br>
-<img src="readme%20assets/supplier-requests.gif" alt="Supplier: two orders from the library, one approved with an invoice including 17% VAT, the other rejected" width="700">
+<img src="readme%20assets/supplier-requests.gif" alt="Supplier: two orders from the library; one is rejected, the other approved with an invoice including 17% VAT" width="700">
 </details>
 
 ### 🔐 Security
